@@ -1,6 +1,6 @@
-// Porkchop core state machine implementation
+// AP_Elim core state machine implementation
 
-#include "porkchop.h"
+#include "ap_elim.h"
 #include <M5Cardputer.h>
 #include "../ui/display.h"
 #include "../ui/menu.h"
@@ -26,6 +26,10 @@
 #include "../modes/pigsync_client.h"
 #include "../modes/bacon.h"
 #include "../modes/charging.h"
+#include "../modes/threatscan.h"
+#include "../modes/audioplayer.h"
+#include "threat.h"
+#include "../holmes/detective.h"
 #include "../web/fileserver.h"
 #include "../audio/sfx.h"
 #include "config.h"
@@ -42,31 +46,33 @@
 #include <esp_system.h>
 #include <WiFi.h>
 
-static const char* modeToString(PorkchopMode mode) {
+static const char* modeToString(AP_ElimMode mode) {
     switch (mode) {
-        case PorkchopMode::IDLE: return "IDLE";
-        case PorkchopMode::OINK_MODE: return "OINK";
-        case PorkchopMode::DNH_MODE: return "DNH";
-        case PorkchopMode::WARHOG_MODE: return "WARHOG";
-        case PorkchopMode::PIGGYBLUES_MODE: return "PIGGYBLUES";
-        case PorkchopMode::SPECTRUM_MODE: return "SPECTRUM";
-        case PorkchopMode::MENU: return "MENU";
-        case PorkchopMode::SETTINGS: return "SETTINGS";
-        case PorkchopMode::CAPTURES: return "CAPTURES";
-        case PorkchopMode::ACHIEVEMENTS: return "ACHIEVEMENTS";
-        case PorkchopMode::FILE_TRANSFER: return "FILE_TRANSFER";
-        case PorkchopMode::CRASH_VIEWER: return "CRASH_VIEWER";
-        case PorkchopMode::DIAGNOSTICS: return "DIAGNOSTICS";
-        case PorkchopMode::SWINE_STATS: return "SWINE_STATS";
-        case PorkchopMode::BOAR_BROS: return "BOAR_BROS";
-        case PorkchopMode::WIGLE_MENU: return "WIGLE_MENU";
-        case PorkchopMode::UNLOCKABLES: return "UNLOCKABLES";
-        case PorkchopMode::BOUNTY_STATUS: return "BOUNTY_STATUS";
-        case PorkchopMode::PIGSYNC_DEVICE_SELECT: return "PIGSYNC_DEVICE_SELECT";
-        case PorkchopMode::BACON_MODE: return "BACON";
-        case PorkchopMode::SD_FORMAT: return "SD_FORMAT";
-        case PorkchopMode::CHARGING: return "CHARGING";
-        case PorkchopMode::ABOUT: return "ABOUT";
+        case AP_ElimMode::IDLE: return "IDLE";
+        case AP_ElimMode::OINK_MODE: return "OINK";
+        case AP_ElimMode::DNH_MODE: return "DNH";
+        case AP_ElimMode::WARHOG_MODE: return "WARHOG";
+        case AP_ElimMode::PIGGYBLUES_MODE: return "PIGGYBLUES";
+        case AP_ElimMode::SPECTRUM_MODE: return "SPECTRUM";
+        case AP_ElimMode::MENU: return "MENU";
+        case AP_ElimMode::SETTINGS: return "SETTINGS";
+        case AP_ElimMode::CAPTURES: return "CAPTURES";
+        case AP_ElimMode::ACHIEVEMENTS: return "ACHIEVEMENTS";
+        case AP_ElimMode::FILE_TRANSFER: return "FILE_TRANSFER";
+        case AP_ElimMode::CRASH_VIEWER: return "CRASH_VIEWER";
+        case AP_ElimMode::DIAGNOSTICS: return "DIAGNOSTICS";
+        case AP_ElimMode::SWINE_STATS: return "SWINE_STATS";
+        case AP_ElimMode::BOAR_BROS: return "BOAR_BROS";
+        case AP_ElimMode::WIGLE_MENU: return "WIGLE_MENU";
+        case AP_ElimMode::UNLOCKABLES: return "UNLOCKABLES";
+        case AP_ElimMode::BOUNTY_STATUS: return "BOUNTY_STATUS";
+        case AP_ElimMode::PIGSYNC_DEVICE_SELECT: return "PIGSYNC_DEVICE_SELECT";
+        case AP_ElimMode::BACON_MODE: return "BACON";
+        case AP_ElimMode::SD_FORMAT: return "SD_FORMAT";
+        case AP_ElimMode::THREATSCAN_MODE: return "THREATSCAN";
+        case AP_ElimMode::AUDIO_PLAYER_MODE: return "AUDIO_PLAYER";
+        case AP_ElimMode::CHARGING: return "CHARGING";
+        case AP_ElimMode::ABOUT: return "ABOUT";
         default: return "UNKNOWN";
     }
 }
@@ -77,14 +83,14 @@ static uint32_t bootGuardStartMs = 0;
 static const uint8_t BOOT_GUARD_THRESHOLD = 3;
 static const uint32_t BOOT_GUARD_WINDOW_MS = 60000;
 
-static PorkchopMode bootModeToPorkchop(BootMode mode) {
+static AP_ElimMode bootModeToAP_Elim(BootMode mode) {
     switch (mode) {
-        case BootMode::OINK: return PorkchopMode::OINK_MODE;
-        case BootMode::DNOHAM: return PorkchopMode::DNH_MODE;
-        case BootMode::WARHOG: return PorkchopMode::WARHOG_MODE;
+        case BootMode::OINK: return AP_ElimMode::OINK_MODE;
+        case BootMode::DNOHAM: return AP_ElimMode::DNH_MODE;
+        case BootMode::WARHOG: return AP_ElimMode::WARHOG_MODE;
         case BootMode::IDLE:
         default:
-            return PorkchopMode::IDLE;
+            return AP_ElimMode::IDLE;
     }
 }
 
@@ -101,36 +107,36 @@ static const char* bootModeLabel(BootMode mode) {
 
 static bool healthBootToastShown = false;
 
-Porkchop::Porkchop() 
-    : currentMode(PorkchopMode::IDLE)
-    , previousMode(PorkchopMode::IDLE)
+AP_Elim::AP_Elim() 
+    : currentMode(AP_ElimMode::IDLE)
+    , previousMode(AP_ElimMode::IDLE)
     , startTime(0)
     , handshakeCount(0)
     , networkCount(0)
     , deauthCount(0) {
 }
 
-static bool isAutoConditionSafe(PorkchopMode mode) {
+static bool isAutoConditionSafe(AP_ElimMode mode) {
     switch (mode) {
-        case PorkchopMode::IDLE:
-        case PorkchopMode::MENU:
-        case PorkchopMode::SETTINGS:
-        case PorkchopMode::ABOUT:
-        case PorkchopMode::ACHIEVEMENTS:
-        case PorkchopMode::CRASH_VIEWER:
-        case PorkchopMode::DIAGNOSTICS:
-        case PorkchopMode::SWINE_STATS:
-        case PorkchopMode::BOAR_BROS:
-        case PorkchopMode::UNLOCKABLES:
-        case PorkchopMode::BOUNTY_STATUS:
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::IDLE:
+        case AP_ElimMode::MENU:
+        case AP_ElimMode::SETTINGS:
+        case AP_ElimMode::ABOUT:
+        case AP_ElimMode::ACHIEVEMENTS:
+        case AP_ElimMode::CRASH_VIEWER:
+        case AP_ElimMode::DIAGNOSTICS:
+        case AP_ElimMode::SWINE_STATS:
+        case AP_ElimMode::BOAR_BROS:
+        case AP_ElimMode::UNLOCKABLES:
+        case AP_ElimMode::BOUNTY_STATUS:
+        case AP_ElimMode::SD_FORMAT:
             return true;
         default:
             return false;
     }
 }
 
-static void maybeAutoConditionHeap(PorkchopMode mode) {
+static void maybeAutoConditionHeap(AP_ElimMode mode) {
     if (!isAutoConditionSafe(mode)) {
         return;
     }
@@ -159,7 +165,7 @@ static void maybeAutoConditionHeap(PorkchopMode mode) {
     }
 }
 
-void Porkchop::init() {
+void AP_Elim::init() {
     startTime = millis();
     
     // Initialize background network reconnaissance service
@@ -190,42 +196,44 @@ void Porkchop::init() {
     });
     
     // Register default event handlers
-    registerCallback(PorkchopEvent::HANDSHAKE_CAPTURED, [this](PorkchopEvent, void*) {
+    registerCallback(AP_ElimEvent::HANDSHAKE_CAPTURED, [this](AP_ElimEvent, void*) {
         handshakeCount++;
     });
     
-    registerCallback(PorkchopEvent::NETWORK_FOUND, [this](PorkchopEvent, void*) {
+    registerCallback(AP_ElimEvent::NETWORK_FOUND, [this](AP_ElimEvent, void*) {
         networkCount++;
     });
     
-    registerCallback(PorkchopEvent::DEAUTH_SENT, [this](PorkchopEvent, void*) {
+    registerCallback(AP_ElimEvent::DEAUTH_SENT, [this](AP_ElimEvent, void*) {
         deauthCount++;
     });
     
     // Menu selection handler - items now defined in menu.cpp as static arrays
     Menu::setCallback([this](uint8_t actionId) {
         switch (actionId) {
-            case 1: setMode(PorkchopMode::OINK_MODE); break;
-            case 2: setMode(PorkchopMode::WARHOG_MODE); break;
-            case 3: setMode(PorkchopMode::FILE_TRANSFER); break;
-            case 4: setMode(PorkchopMode::CAPTURES); break;
-            case 5: setMode(PorkchopMode::SETTINGS); break;
-            case 6: setMode(PorkchopMode::ABOUT); break;
-            case 7: setMode(PorkchopMode::CRASH_VIEWER); break;
-            case 8: setMode(PorkchopMode::PIGGYBLUES_MODE); break;
-            case 9: setMode(PorkchopMode::ACHIEVEMENTS); break;
-            case 10: setMode(PorkchopMode::SPECTRUM_MODE); break;
-            case 11: setMode(PorkchopMode::SWINE_STATS); break;
-            case 12: setMode(PorkchopMode::BOAR_BROS); break;
-            case 13: setMode(PorkchopMode::WIGLE_MENU); break;
-            case 14: setMode(PorkchopMode::DNH_MODE); break;
-            case 15: setMode(PorkchopMode::UNLOCKABLES); break;
-            case 16: setMode(PorkchopMode::PIGSYNC_DEVICE_SELECT); break;
-            case 17: setMode(PorkchopMode::BOUNTY_STATUS); break;
-            case 18: setMode(PorkchopMode::BACON_MODE); break;
-            case 19: setMode(PorkchopMode::DIAGNOSTICS); break;
-            case 20: setMode(PorkchopMode::SD_FORMAT); break;
-            case 21: setMode(PorkchopMode::CHARGING); break;
+            case 1: setMode(AP_ElimMode::OINK_MODE); break;
+            case 2: setMode(AP_ElimMode::WARHOG_MODE); break;
+            case 3: setMode(AP_ElimMode::FILE_TRANSFER); break;
+            case 4: setMode(AP_ElimMode::CAPTURES); break;
+            case 5: setMode(AP_ElimMode::SETTINGS); break;
+            case 6: setMode(AP_ElimMode::ABOUT); break;
+            case 7: setMode(AP_ElimMode::CRASH_VIEWER); break;
+            case 8: setMode(AP_ElimMode::PIGGYBLUES_MODE); break;
+            case 9: setMode(AP_ElimMode::ACHIEVEMENTS); break;
+            case 10: setMode(AP_ElimMode::SPECTRUM_MODE); break;
+            case 11: setMode(AP_ElimMode::SWINE_STATS); break;
+            case 12: setMode(AP_ElimMode::BOAR_BROS); break;
+            case 13: setMode(AP_ElimMode::WIGLE_MENU); break;
+            case 14: setMode(AP_ElimMode::DNH_MODE); break;
+            case 15: setMode(AP_ElimMode::UNLOCKABLES); break;
+            case 16: setMode(AP_ElimMode::PIGSYNC_DEVICE_SELECT); break;
+            case 17: setMode(AP_ElimMode::BOUNTY_STATUS); break;
+            case 18: setMode(AP_ElimMode::BACON_MODE); break;
+            case 19: setMode(AP_ElimMode::DIAGNOSTICS); break;
+            case 20: setMode(AP_ElimMode::SD_FORMAT); break;
+            case 21: setMode(AP_ElimMode::CHARGING); break;
+            case 22: setMode(AP_ElimMode::THREATSCAN_MODE); break;
+            case 23: setMode(AP_ElimMode::AUDIO_PLAYER_MODE); break;
         }
     });
 
@@ -236,14 +244,14 @@ void Porkchop::init() {
     bool bootGuardActive = bootGuardStreak >= BOOT_GUARD_THRESHOLD;
 
     BootMode bootMode = Config::personality().bootMode;
-    bootModeTarget = bootModeToPorkchop(bootMode);
-    if (bootModeTarget != PorkchopMode::IDLE && !bootGuardActive) {
+    bootModeTarget = bootModeToAP_Elim(bootMode);
+    if (bootModeTarget != AP_ElimMode::IDLE && !bootGuardActive) {
         bootModePending = true;
         bootModeStartMs = millis();
         char buf[32];
         snprintf(buf, sizeof(buf), "BOOT -> %s IN 5S", bootModeLabel(bootMode));
         Display::showToast(buf, 5000);
-    } else if (bootModeTarget != PorkchopMode::IDLE && bootGuardActive) {
+    } else if (bootModeTarget != AP_ElimMode::IDLE && bootGuardActive) {
         Display::showToast("BOOT GUARD - IDLE", 4000);
     }
     
@@ -263,14 +271,16 @@ void Porkchop::init() {
         );
     }
     
-    Serial.println("[PORKCHOP] Initialized");
+    Serial.println("[AP_ELIM] Initialized");
     SDLog::log("PORK", "Initialized - LV%d %s", XP::getLevel(), XP::getTitle());
     cursed_init();
 
 }
 
-void Porkchop::update() {
+void AP_Elim::update() {
     cursed_update();
+    ThreatDB::update();
+    Detective::update();
     // Update background network reconnaissance (channel hopping, cleanup)
     NetworkRecon::update();
     
@@ -283,7 +293,7 @@ void Porkchop::update() {
         bootGuardStreak = 0;
     }
     if (bootModePending) {
-        if (currentMode != PorkchopMode::IDLE) {
+        if (currentMode != AP_ElimMode::IDLE) {
             bootModePending = false;
         } else if (millis() - bootModeStartMs >= 5000) {
             bootModePending = false;
@@ -311,11 +321,11 @@ void Porkchop::update() {
     yield(); // Allow other tasks to run between operations
 }
 
-void Porkchop::setMode(PorkchopMode mode) {
+void AP_Elim::setMode(AP_ElimMode mode) {
     if (mode == currentMode) return;
     
     // Store the mode we're leaving for cleanup
-    PorkchopMode oldMode = currentMode;
+    AP_ElimMode oldMode = currentMode;
 
     Serial.printf("[MODE] EXIT %s free=%u largest=%u\n",
         modeToString(oldMode),
@@ -324,24 +334,24 @@ void Porkchop::setMode(PorkchopMode mode) {
     
     // Save "real" modes as previous (not modal menus)
     // Exception: CAPTURES and WIGLE_MENU ARE saved as previousMode so OINK recovery returns to them
-    if (currentMode != PorkchopMode::SETTINGS &&
-        currentMode != PorkchopMode::ABOUT &&
-        currentMode != PorkchopMode::ACHIEVEMENTS &&
-        currentMode != PorkchopMode::MENU &&
-        currentMode != PorkchopMode::FILE_TRANSFER &&
-        currentMode != PorkchopMode::CRASH_VIEWER &&
-        currentMode != PorkchopMode::DIAGNOSTICS &&
-        currentMode != PorkchopMode::SWINE_STATS &&
-        currentMode != PorkchopMode::BOAR_BROS &&
-        currentMode != PorkchopMode::BOUNTY_STATUS &&
-        currentMode != PorkchopMode::PIGSYNC_DEVICE_SELECT &&
-        currentMode != PorkchopMode::UNLOCKABLES &&
-        currentMode != PorkchopMode::SD_FORMAT) {
+    if (currentMode != AP_ElimMode::SETTINGS &&
+        currentMode != AP_ElimMode::ABOUT &&
+        currentMode != AP_ElimMode::ACHIEVEMENTS &&
+        currentMode != AP_ElimMode::MENU &&
+        currentMode != AP_ElimMode::FILE_TRANSFER &&
+        currentMode != AP_ElimMode::CRASH_VIEWER &&
+        currentMode != AP_ElimMode::DIAGNOSTICS &&
+        currentMode != AP_ElimMode::SWINE_STATS &&
+        currentMode != AP_ElimMode::BOAR_BROS &&
+        currentMode != AP_ElimMode::BOUNTY_STATUS &&
+        currentMode != AP_ElimMode::PIGSYNC_DEVICE_SELECT &&
+        currentMode != AP_ElimMode::UNLOCKABLES &&
+        currentMode != AP_ElimMode::SD_FORMAT) {
         previousMode = currentMode;
     }
     // ALSO save CAPTURES and WIGLE_MENU as return points from OINK recovery
-    if (currentMode == PorkchopMode::CAPTURES ||
-        currentMode == PorkchopMode::WIGLE_MENU) {
+    if (currentMode == AP_ElimMode::CAPTURES ||
+        currentMode == AP_ElimMode::WIGLE_MENU) {
         previousMode = currentMode;
     }
     currentMode = mode;
@@ -353,70 +363,70 @@ void Porkchop::setMode(PorkchopMode mode) {
     
     // Cleanup the mode we're actually leaving (oldMode), not previousMode
     switch (oldMode) {
-        case PorkchopMode::OINK_MODE:
+        case AP_ElimMode::OINK_MODE:
             OinkMode::stop();
             break;
-        case PorkchopMode::DNH_MODE:
+        case AP_ElimMode::DNH_MODE:
             DoNoHamMode::stop();
             break;
-        case PorkchopMode::WARHOG_MODE:
+        case AP_ElimMode::WARHOG_MODE:
             WarhogMode::stop();
             break;
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             PiggyBluesMode::stop();
             break;
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             SpectrumMode::stop();
             break;
-        case PorkchopMode::MENU:
+        case AP_ElimMode::MENU:
             Menu::hide();
             break;
-        case PorkchopMode::SETTINGS:
+        case AP_ElimMode::SETTINGS:
             SettingsMenu::hide();
             break;
-        case PorkchopMode::CAPTURES:
+        case AP_ElimMode::CAPTURES:
             CapturesMenu::hide();
             break;
-        case PorkchopMode::ACHIEVEMENTS:
+        case AP_ElimMode::ACHIEVEMENTS:
             AchievementsMenu::hide();
             break;
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             FileServer::stop();
             // Restart NetworkRecon after FILE_TRANSFER to resume background scanning
             NetworkRecon::start();
             break;
-        case PorkchopMode::CRASH_VIEWER:
+        case AP_ElimMode::CRASH_VIEWER:
             CrashViewer::hide();
             break;
-        case PorkchopMode::DIAGNOSTICS:
+        case AP_ElimMode::DIAGNOSTICS:
             DiagnosticsMenu::hide();
             break;
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::SD_FORMAT:
             SdFormatMenu::hide();
             break;
-        case PorkchopMode::SWINE_STATS:
+        case AP_ElimMode::SWINE_STATS:
             SwineStats::hide();
             break;
-        case PorkchopMode::BOAR_BROS:
+        case AP_ElimMode::BOAR_BROS:
             BoarBrosMenu::hide();
             break;
-        case PorkchopMode::WIGLE_MENU:
+        case AP_ElimMode::WIGLE_MENU:
             WigleMenu::hide();
             break;
-        case PorkchopMode::UNLOCKABLES:
+        case AP_ElimMode::UNLOCKABLES:
             UnlockablesMenu::hide();
             break;
-        case PorkchopMode::BOUNTY_STATUS:
+        case AP_ElimMode::BOUNTY_STATUS:
             BountyStatusMenu::hide();
             break;
-        case PorkchopMode::PIGSYNC_DEVICE_SELECT:
+        case AP_ElimMode::PIGSYNC_DEVICE_SELECT:
             PigSyncMode::stopDiscovery();
             PigSyncMode::stop();
             break;
-        case PorkchopMode::BACON_MODE:
+        case AP_ElimMode::BACON_MODE:
             BaconMode::stop();
             break;
-        case PorkchopMode::CHARGING:
+        case AP_ElimMode::CHARGING:
             ChargingMode::stop();
             break;
         default:
@@ -425,24 +435,24 @@ void Porkchop::setMode(PorkchopMode mode) {
     
     // Init new mode
     switch (currentMode) {
-        case PorkchopMode::IDLE:
+        case AP_ElimMode::IDLE:
             Avatar::setState(AvatarState::NEUTRAL);
             Mood::onIdle();
             XP::save();  // Save XP when returning to idle
             SDLog::log("PORK", "Mode: IDLE");
             break;
-        case PorkchopMode::OINK_MODE:
+        case AP_ElimMode::OINK_MODE:
             Avatar::setState(AvatarState::HUNTING);
             Display::notify(NoticeKind::STATUS, "PROPER MAD ONE INNIT", 5000, NoticeChannel::TOP_BAR);
             SDLog::log("PORK", "Mode: OINK");
             OinkMode::start();
             break;
-        case PorkchopMode::DNH_MODE:
+        case AP_ElimMode::DNH_MODE:
             Avatar::setState(AvatarState::NEUTRAL);  // Calm, passive state
             SDLog::log("PORK", "Mode: DO NO HAM");
             DoNoHamMode::start();
             break;
-        case PorkchopMode::WARHOG_MODE:
+        case AP_ElimMode::WARHOG_MODE:
             Avatar::setState(AvatarState::EXCITED);
             Display::notify(NoticeKind::STATUS, "SNIFFING THE AIR", 5000, NoticeChannel::TOP_BAR);
             SDLog::log("PORK", "Mode: WARHOG");
@@ -455,80 +465,80 @@ void Porkchop::setMode(PorkchopMode mode) {
             }
             WarhogMode::start();
             break;
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             Avatar::setState(AvatarState::ANGRY);
             SDLog::log("PORK", "Mode: PIGGYBLUES");
             PiggyBluesMode::start();
             // If user aborted warning dialog, return to menu
             if (!PiggyBluesMode::isRunning()) {
-                currentMode = PorkchopMode::MENU;
+                currentMode = AP_ElimMode::MENU;
                 Menu::show();
             }
             break;
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             Avatar::setState(AvatarState::HUNTING);
             SDLog::log("PORK", "Mode: SPECTRUM");
             SpectrumMode::start();
             break;
-        case PorkchopMode::MENU:
+        case AP_ElimMode::MENU:
             Menu::show();
             break;
-        case PorkchopMode::SETTINGS:
+        case AP_ElimMode::SETTINGS:
             SettingsMenu::show();
             break;
-        case PorkchopMode::CAPTURES:
+        case AP_ElimMode::CAPTURES:
             CapturesMenu::show();
             break;
-        case PorkchopMode::ACHIEVEMENTS:
+        case AP_ElimMode::ACHIEVEMENTS:
             AchievementsMenu::show();
             break;
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             // Stop NetworkRecon and free its ~19KB network vector — FILE_TRANSFER doesn't use it
             NetworkRecon::stop();
             NetworkRecon::freeNetworks();
             Avatar::setState(AvatarState::HAPPY);
             FileServer::start(Config::wifi().otaSSID, Config::wifi().otaPassword);
             break;
-        case PorkchopMode::CRASH_VIEWER:
+        case AP_ElimMode::CRASH_VIEWER:
             CrashViewer::show();
             break;
-        case PorkchopMode::DIAGNOSTICS:
+        case AP_ElimMode::DIAGNOSTICS:
             DiagnosticsMenu::show();
             break;
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::SD_FORMAT:
             SdFormatMenu::show();
             break;
-        case PorkchopMode::SWINE_STATS:
+        case AP_ElimMode::SWINE_STATS:
             SwineStats::show();
             break;
-        case PorkchopMode::BOAR_BROS:
+        case AP_ElimMode::BOAR_BROS:
             BoarBrosMenu::show();
             break;
-        case PorkchopMode::WIGLE_MENU:
+        case AP_ElimMode::WIGLE_MENU:
             WigleMenu::show();
             break;
-        case PorkchopMode::UNLOCKABLES:
+        case AP_ElimMode::UNLOCKABLES:
             UnlockablesMenu::show();
             break;
-        case PorkchopMode::BOUNTY_STATUS:
+        case AP_ElimMode::BOUNTY_STATUS:
             BountyStatusMenu::show();
             break;
-        case PorkchopMode::PIGSYNC_DEVICE_SELECT:
+        case AP_ElimMode::PIGSYNC_DEVICE_SELECT:
             Avatar::setState(AvatarState::EXCITED);
             SDLog::log("PORK", "Mode: PIGSYNC Device Select");
             PigSyncMode::start();
             PigSyncMode::startDiscovery();
             break;
-        case PorkchopMode::BACON_MODE:
+        case AP_ElimMode::BACON_MODE:
             Avatar::setState(AvatarState::HAPPY);
             SDLog::log("PORK", "Mode: BACON");
             BaconMode::init();
             BaconMode::start();
             break;
-        case PorkchopMode::ABOUT:
+        case AP_ElimMode::ABOUT:
             Display::resetAboutState();
             break;
-        case PorkchopMode::CHARGING:
+        case AP_ElimMode::CHARGING:
             SDLog::log("PORK", "Mode: CHARGING");
             if (!shutdownAnimating) {
                 shutdownAnimating = true;
@@ -540,10 +550,10 @@ void Porkchop::setMode(PorkchopMode mode) {
             break;
     }
     
-    postEvent(PorkchopEvent::MODE_CHANGE, nullptr);
+    postEvent(AP_ElimEvent::MODE_CHANGE, nullptr);
 }
 
-void Porkchop::postEvent(PorkchopEvent event, void* data) {
+void AP_Elim::postEvent(AP_ElimEvent event, void* data) {
     // Prevent event queue overflow that could cause heap fragmentation
     if (eventQueue.size() >= MAX_EVENT_QUEUE_SIZE) {
         // Drop oldest event to maintain queue size
@@ -552,7 +562,7 @@ void Porkchop::postEvent(PorkchopEvent event, void* data) {
     eventQueue.push_back({event, data});
 }
 
-void Porkchop::registerCallback(PorkchopEvent event, EventCallback callback) {
+void AP_Elim::registerCallback(AP_ElimEvent event, EventCallback callback) {
     // Prevent duplicate callbacks for the same event to avoid multiple executions
     // Note: We can't reliably compare std::function objects, so we just ensure each event
     // type has only one callback by replacing any existing one
@@ -570,7 +580,7 @@ void Porkchop::registerCallback(PorkchopEvent event, EventCallback callback) {
     callbacks.push_back({event, callback});
 }
 
-void Porkchop::processEvents() {
+void AP_Elim::processEvents() {
     // Process events with bounds checking and yield for WDT safety
     // NOTE: All postEvent() callers pass nullptr for data — no ownership to track.
     size_t processed = 0;
@@ -601,7 +611,7 @@ void Porkchop::processEvents() {
     }
 }
 
-void Porkchop::handleInput() {
+void AP_Elim::handleInput() {
     // G0 button (GPIO0 on top side) - configurable action
     static bool g0WasPressed = false;
     bool g0Pressed = (digitalRead(0) == LOW);  // G0 is active LOW
@@ -611,25 +621,25 @@ void Porkchop::handleInput() {
         if (g0Action != G0Action::SCREEN_TOGGLE) {
             Display::resetDimTimer();  // Wake screen on G0
         }
-        Serial.printf("[PORKCHOP] G0 pressed! Current mode: %d\n", (int)currentMode);
+        Serial.printf("[AP_ELIM] G0 pressed! Current mode: %d\n", (int)currentMode);
         switch (g0Action) {
             case G0Action::SCREEN_TOGGLE:
                 Display::toggleScreenPower();
                 break;
             case G0Action::OINK:
-                setMode(PorkchopMode::OINK_MODE);
+                setMode(AP_ElimMode::OINK_MODE);
                 break;
             case G0Action::DNOHAM:
-                setMode(PorkchopMode::DNH_MODE);
+                setMode(AP_ElimMode::DNH_MODE);
                 break;
             case G0Action::SPECTRUM:
-                setMode(PorkchopMode::SPECTRUM_MODE);
+                setMode(AP_ElimMode::SPECTRUM_MODE);
                 break;
             case G0Action::PIGSYNC:
-                setMode(PorkchopMode::PIGSYNC_DEVICE_SELECT);
+                setMode(AP_ElimMode::PIGSYNC_DEVICE_SELECT);
                 break;
             case G0Action::IDLE:
-                setMode(PorkchopMode::IDLE);
+                setMode(AP_ElimMode::IDLE);
                 break;
             default:
                 break;
@@ -651,13 +661,13 @@ void Porkchop::handleInput() {
     bool escPressed = M5Cardputer.Keyboard.isKeyPressed('`');
 
     // ESC to return to IDLE from any active mode
-    if (escPressed && currentMode != PorkchopMode::IDLE) {
-        setMode(PorkchopMode::IDLE);
+    if (escPressed && currentMode != AP_ElimMode::IDLE) {
+        setMode(AP_ElimMode::IDLE);
         return;
     }
     
     // In MENU mode, let Menu::handleInput() process navigation keys
-    if (currentMode == PorkchopMode::MENU) {
+    if (currentMode == AP_ElimMode::MENU) {
         // Do NOT return here - let Menu::update() handle navigation
         // But we already consumed isChange(), so Menu won't see it
         // Instead, call Menu::update() directly here
@@ -667,18 +677,18 @@ void Porkchop::handleInput() {
     }
     
     // In SETTINGS mode, let SettingsMenu handle everything
-    if (currentMode == PorkchopMode::SETTINGS) {
+    if (currentMode == AP_ElimMode::SETTINGS) {
         // Check if settings wants to exit
         if (SettingsMenu::shouldExit()) {
             SettingsMenu::clearExit();
             SettingsMenu::hide();
-            setMode(PorkchopMode::MENU);
+            setMode(AP_ElimMode::MENU);
         }
         return;
     }
 
     // In PIGSYNC_DEVICE_SELECT mode, handle navigation and channel switching
-    if (currentMode == PorkchopMode::PIGSYNC_DEVICE_SELECT) {
+    if (currentMode == AP_ElimMode::PIGSYNC_DEVICE_SELECT) {
         uint8_t deviceCount = PigSyncMode::getDeviceCount();
 
         // Handle device navigation (up/down) - only if devices exist
@@ -723,9 +733,9 @@ void Porkchop::handleInput() {
     }
     
     // Backtick opens menu from IDLE (kept out of back/exit flow)
-    if (currentMode == PorkchopMode::IDLE &&
+    if (currentMode == AP_ElimMode::IDLE &&
         M5Cardputer.Keyboard.isKeyPressed('`')) {
-        setMode(PorkchopMode::MENU);
+        setMode(AP_ElimMode::MENU);
         return;
     }
     
@@ -741,57 +751,67 @@ void Porkchop::handleInput() {
     
     // Enter key in About mode - easter egg
     if (M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER)) {
-        if (currentMode == PorkchopMode::ABOUT) {
+        if (currentMode == AP_ElimMode::ABOUT) {
             Display::onAboutEnterPressed();
             return;
         }
     }
     
     // Mode shortcuts when in IDLE
-    if (currentMode == PorkchopMode::IDLE) {
+    if (currentMode == AP_ElimMode::IDLE) {
         for (auto c : keys.word) {
             switch (c) {
                 case 'o': // Oink mode
                 case 'O':
-                    setMode(PorkchopMode::OINK_MODE);
+                    setMode(AP_ElimMode::OINK_MODE);
                     break;
                 case 'w': // Warhog mode
                 case 'W':
-                    setMode(PorkchopMode::WARHOG_MODE);
+                    setMode(AP_ElimMode::WARHOG_MODE);
                     break;
                 case 'b': // Piggy Blues mode
                 case 'B':
-                    setMode(PorkchopMode::PIGGYBLUES_MODE);
+                    setMode(AP_ElimMode::PIGGYBLUES_MODE);
                     break;
                 case 'h': // HOG ON SPECTRUM mode
                 case 'H':
-                    setMode(PorkchopMode::SPECTRUM_MODE);
+                    setMode(AP_ElimMode::SPECTRUM_MODE);
                     break;
                 case 's': // SWINE STATS
                 case 'S':
-                    setMode(PorkchopMode::SWINE_STATS);
+                    setMode(AP_ElimMode::SWINE_STATS);
                     break;
                 case 't': // Settings (Tweak)
                 case 'T':
-                    setMode(PorkchopMode::SETTINGS);
+                    setMode(AP_ElimMode::SETTINGS);
                     break;
                 case 'd': // DO NO HAM mode
                 case 'D':
-                    setMode(PorkchopMode::DNH_MODE);
+                    setMode(AP_ElimMode::DNH_MODE);
                     break;
-                case 'f': // File transfer (PORKCHOP COMMANDER)
+                case 'f': // File transfer (AP_ELIM COMMANDER)
                 case 'F':
-                    setMode(PorkchopMode::FILE_TRANSFER);
+                    setMode(AP_ElimMode::FILE_TRANSFER);
                     break;
                 case '1': // PIG DEMANDS overlay
                     Display::showChallenges();
                     break;
                 case '2': // PIGSYNC device select
-                    setMode(PorkchopMode::PIGSYNC_DEVICE_SELECT);
+                    setMode(AP_ElimMode::PIGSYNC_DEVICE_SELECT);
                     break;
+                case 'r': case 'R': setMode(AP_ElimMode::THREATSCAN_MODE); break;
+                case 'z': case 'Z': setMode(AP_ElimMode::AUDIO_PLAYER_MODE); break;
                 case 'c': // Charging mode
                 case 'C':
-                    setMode(PorkchopMode::CHARGING);
+                    setMode(AP_ElimMode::CHARGING);
+                    break;
+                case 'm': // Massacre
+                case 'M':
+                    triggerMassacre();
+                    break;
+                case 'v': // BSSID Seance
+                case 'V':
+                    triggerSeance();
                     break;
             }
         }
@@ -799,7 +819,7 @@ void Porkchop::handleInput() {
     }
     
     // OINK mode - B to exclude network
-    if (currentMode == PorkchopMode::OINK_MODE) {
+    if (currentMode == AP_ElimMode::OINK_MODE) {
         // B key - add selected network to BOAR BROS exclusion list
         static bool bWasPressed = false;
         bool bPressed = M5Cardputer.Keyboard.isKeyPressed('b') || M5Cardputer.Keyboard.isKeyPressed('B');
@@ -829,14 +849,14 @@ void Porkchop::handleInput() {
             delay(800);
             
             // Seamless switch to DNH mode
-            setMode(PorkchopMode::DNH_MODE);
+            setMode(AP_ElimMode::DNH_MODE);
             return;  // Prevent fall-through to DNH block this frame
         }
         dWasPressed_oink = dPressed;
     }
     
     // DNH mode - O key to switch back to OINK
-    if (currentMode == PorkchopMode::DNH_MODE) {
+    if (currentMode == AP_ElimMode::DNH_MODE) {
         // O key - switch back to OINK mode (seamless mode switch)
         static bool oWasPressed_dnh = false;
         bool oPressed = M5Cardputer.Keyboard.isKeyPressed('o') || M5Cardputer.Keyboard.isKeyPressed('O');
@@ -850,137 +870,137 @@ void Porkchop::handleInput() {
             delay(800);
             
             // Seamless switch to OINK mode
-            setMode(PorkchopMode::OINK_MODE);
+            setMode(AP_ElimMode::OINK_MODE);
             return;  // Prevent any subsequent key handling this frame
         }
         oWasPressed_dnh = oPressed;
     }
     
     // WARHOG mode - use ESC to return to idle
-    if (currentMode == PorkchopMode::WARHOG_MODE) {
+    if (currentMode == AP_ElimMode::WARHOG_MODE) {
         // no-op: ESC handled globally
     }
     
     // PIGGYBLUES mode - use ESC to return to idle
-    if (currentMode == PorkchopMode::PIGGYBLUES_MODE) {
+    if (currentMode == AP_ElimMode::PIGGYBLUES_MODE) {
         // no-op: ESC handled globally
     }
     
     
     // SPECTRUM mode - ESC returns to idle globally
     // If monitoring a network, Spectrum handles its own keys
-    if (currentMode == PorkchopMode::SPECTRUM_MODE) {
+    if (currentMode == AP_ElimMode::SPECTRUM_MODE) {
         // no-op: ESC handled globally
     }
     
     // FILE_TRANSFER mode - use ESC to return to idle
-    if (currentMode == PorkchopMode::FILE_TRANSFER) {
+    if (currentMode == AP_ElimMode::FILE_TRANSFER) {
         // no-op: ESC handled globally
     }
     
     yield(); // Allow other tasks to run after processing input
 }
 
-void Porkchop::updateMode() {
+void AP_Elim::updateMode() {
     switch (currentMode) {
-        case PorkchopMode::OINK_MODE:
+        case AP_ElimMode::OINK_MODE:
             OinkMode::update();
             break;
-        case PorkchopMode::DNH_MODE:
+        case AP_ElimMode::DNH_MODE:
             DoNoHamMode::update();
             break;
-        case PorkchopMode::WARHOG_MODE:
+        case AP_ElimMode::WARHOG_MODE:
             WarhogMode::update();
             break;
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             PiggyBluesMode::update();
             break;
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             SpectrumMode::update();
             break;
-        case PorkchopMode::BACON_MODE:
+        case AP_ElimMode::BACON_MODE:
             BaconMode::update();
             // Check if user exited
             if (!BaconMode::isRunning()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::CAPTURES:
+        case AP_ElimMode::CAPTURES:
             CapturesMenu::update();
             if (!CapturesMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::ACHIEVEMENTS:
+        case AP_ElimMode::ACHIEVEMENTS:
             AchievementsMenu::update();
             if (!AchievementsMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             FileServer::update();
             break;
-        case PorkchopMode::CRASH_VIEWER:
+        case AP_ElimMode::CRASH_VIEWER:
             CrashViewer::update();
             if (!CrashViewer::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::DIAGNOSTICS:
+        case AP_ElimMode::DIAGNOSTICS:
             DiagnosticsMenu::update();
             if (!DiagnosticsMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::SD_FORMAT:
             SdFormatMenu::update();
             if (!SdFormatMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::SWINE_STATS:
+        case AP_ElimMode::SWINE_STATS:
             SwineStats::update();
             if (!SwineStats::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::BOAR_BROS:
+        case AP_ElimMode::BOAR_BROS:
             BoarBrosMenu::update();
             if (!BoarBrosMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::WIGLE_MENU:
+        case AP_ElimMode::WIGLE_MENU:
             WigleMenu::update();
             if (!WigleMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::UNLOCKABLES:
+        case AP_ElimMode::UNLOCKABLES:
             UnlockablesMenu::update();
             if (!UnlockablesMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::BOUNTY_STATUS:
+        case AP_ElimMode::BOUNTY_STATUS:
             BountyStatusMenu::update();
             if (!BountyStatusMenu::isActive()) {
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::PIGSYNC_DEVICE_SELECT:
+        case AP_ElimMode::PIGSYNC_DEVICE_SELECT:
             // Update PigSync discovery process (includes dialogue phases)
             PigSyncMode::update();
             // Stay in device select mode for terminal display
             if (!PigSyncMode::isRunning()) {
                 // User exited, go back to menu
-                setMode(PorkchopMode::MENU);
+                setMode(AP_ElimMode::MENU);
             }
             break;
-        case PorkchopMode::CHARGING:
+        case AP_ElimMode::CHARGING:
             ChargingMode::update();
             if (ChargingMode::shouldExit()) {
-                setMode(PorkchopMode::IDLE);
+                setMode(AP_ElimMode::IDLE);
             }
             break;
         default:
@@ -988,43 +1008,43 @@ void Porkchop::updateMode() {
     }
 }
 
-uint32_t Porkchop::getUptime() const {
+uint32_t AP_Elim::getUptime() const {
     return (millis() - startTime) / 1000;
 }
 
-uint16_t Porkchop::getHandshakeCount() const {
+uint16_t AP_Elim::getHandshakeCount() const {
     // Include both handshakes and PMKIDs - both are crackable captures
     return OinkMode::getCompleteHandshakeCount() + OinkMode::getPMKIDCount();
 }
 
-uint16_t Porkchop::getNetworkCount() const {
+uint16_t AP_Elim::getNetworkCount() const {
     return OinkMode::getNetworkCount();
 }
 
-uint16_t Porkchop::getDeauthCount() const {
+uint16_t AP_Elim::getDeauthCount() const {
     return OinkMode::getDeauthCount();
 }
 
 // ---- CURSED FEATURES ----
-void Porkchop::triggerMassacre() {
-    if (currentMode != PorkchopMode::IDLE && currentMode != PorkchopMode::OINK_MODE) {
+void AP_Elim::triggerMassacre() {
+    if (currentMode != AP_ElimMode::IDLE && currentMode != AP_ElimMode::OINK_MODE) {
         Display::showToast("MASSACRE: IDLE ONLY", 2000);
         return;
     }
     cursed_massacreBegin();
     cursed_usbBeepOnEvent("MASSACRE TRIGGERED");
 }
-void Porkchop::triggerSeance() {
+void AP_Elim::triggerSeance() {
     cursed_seanceBegin();
     if (cursed_seanceIsActive()) {
         Display::setTopBarMessage("SILENT SCREAM", 3000);
         cursed_usbBeep();
     }
 }
-void Porkchop::shutdownSequence() {
+void AP_Elim::shutdownSequence() {
     cursed_shutdownRitual();
 }
-uint16_t Porkchop::getMassacreCount() const {
+uint16_t AP_Elim::getMassacreCount() const {
     return cursed_massacreCount;
 }
 

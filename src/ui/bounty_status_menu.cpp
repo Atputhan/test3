@@ -1,5 +1,5 @@
 // Bounty Status Menu - View bounties to send to kid (Sirloin)
-// Porkchop sends wardriven networks TO Sirloin for hunting
+// AP_Elim sends wardriven networks TO Sirloin for hunting
 // Refactored to match captures_menu/boar_bros_menu patterns
 
 #include "bounty_status_menu.h"
@@ -162,7 +162,7 @@ void BountyStatusMenu::drawList(M5Canvas& canvas) {
         char bssidStr[20];
         formatBSSID(bssid, bssidStr, sizeof(bssidStr));
         
-        // Highlight selected (standard porkchop pattern - inverted colors)
+        // Highlight selected (standard ap_elim pattern - inverted colors)
         if (i == selectedIndex) {
             canvas.fillRect(0, y - 1, canvas.width(), LINE_H, COLOR_FG);
             canvas.setTextColor(COLOR_BG);

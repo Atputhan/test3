@@ -207,7 +207,7 @@ void ChargingMode::update() {
         unplugDetectMs = 0;
     }
 
-    // exitRequested is checked by the state machine in porkchop.cpp
+    // exitRequested is checked by the state machine in ap_elim.cpp
     // which will call setMode(IDLE) -> stop() through the normal lifecycle
 }
 

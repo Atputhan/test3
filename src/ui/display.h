@@ -4,7 +4,7 @@
 #include <M5Unified.h>
 
 // Forward declarations
-enum class PorkchopMode : uint8_t;
+enum class AP_ElimMode : uint8_t;
 
 // Display layout constants (240x135 screen)
 #define DISPLAY_W 240
@@ -159,13 +159,13 @@ private:
     static void drawTopBar();
     static void drawBottomBar();
     static void drawTopBarMessageTwoLineDirect();
-    static void drawModeInfo(M5Canvas& canvas, PorkchopMode mode);
+    static void drawModeInfo(M5Canvas& canvas, AP_ElimMode mode);
     static void drawSettingsScreen(M5Canvas& canvas);
     static void drawAboutScreen(M5Canvas& canvas);
     static void drawFileTransferScreen(M5Canvas& canvas);
     
 public:
-    // About screen easter egg handlers (called from porkchop.cpp)
+    // About screen easter egg handlers (called from ap_elim.cpp)
     static void onAboutEnterPressed();
     static void resetAboutState();
 };

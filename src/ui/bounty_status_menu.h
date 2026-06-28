@@ -1,5 +1,5 @@
 // Bounty Status Menu - View bounties to send to kid (Sirloin)
-// Porkchop sends wardriven networks to Sirloin for hunting
+// AP_Elim sends wardriven networks to Sirloin for hunting
 #pragma once
 
 #include <Arduino.h>

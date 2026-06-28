@@ -1,5 +1,5 @@
 /**
- * PigSync ESP-NOW Client (Porkchop/POPS side)
+ * PigSync ESP-NOW Client (AP_Elim/POPS side)
  * 
  * SON OF A PIG - Reliable sync with Sirloin devices
  */

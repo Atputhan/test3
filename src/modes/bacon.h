@@ -19,7 +19,7 @@
 // AP fingerprint structure (what we broadcast)
 struct BaconAPInfo {
     uint8_t bssid[6];
-    int8_t rssi;        // RSSI as seen by Porkchop
+    int8_t rssi;        // RSSI as seen by AP_Elim
     uint8_t channel;
     char ssid[33];      // AP name (for display)
 };

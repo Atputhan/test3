@@ -188,7 +188,7 @@ void cursed_jumpscareTrigger() {
     M5.Display.fillScreen(TFT_WHITE);
     M5.Display.setTextColor(TFT_RED);
     M5.Display.setTextSize(3);
-    M5.Display.drawCentreString("PORKCHOP", 120, 25, 1);
+    M5.Display.drawCentreString("AP_ELIM", 120, 25, 1);
     M5.Display.drawCentreString("UNLEASHED", 120, 55, 1);
     M5.Display.drawCentreString("PMKID", 120, 85, 1);
     M5.Display.display();

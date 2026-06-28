@@ -8,7 +8,7 @@
 #include <string.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/portmacro.h>
-#include "../core/porkchop.h"
+#include "../core/ap_elim.h"
 #include "../core/config.h"
 #include "../core/xp.h"
 #include "../core/challenges.h"
@@ -49,7 +49,7 @@ const PorkTheme THEMES[THEME_COUNT] = {
     // Dark modes - colored text on black (RGB332-compatible)
     {"P1NK",      0xF92A, 0x0000},  // Default piglet pink - RGB332-quantized
     {"CYB3R",     0x07E0, 0x0000},  // Cyan/tron - RGB332-quantized
-    {"PCMDR64",   0xDED5, 0x4A4A},  // Porkchop Commandor 64 - RGB332-quantized
+    {"PCMDR64",   0xDED5, 0x4A4A},  // AP_Elim Commandor 64 - RGB332-quantized
     {"MSD0SEXE", 0xFFE0, 0x001F},  // Classic MS-DOS yellow on blue - RGB332-quantized
     {"AMB3R",     0xFDA0, 0x0000},  // Amber terminal - RGB332-quantized
     {"BL00D",     0xF800, 0x0000},  // Red - RGB332-quantized
@@ -202,7 +202,7 @@ void Display::showLoot(const String& ssid) {
     lootSSID[sizeof(lootSSID) - 1] = '\0';
 }
 
-extern Porkchop porkchop;
+extern AP_Elim ap_elim;
 
 void Display::init() {
     M5.Display.setRotation(1);
@@ -275,13 +275,13 @@ void Display::update() {
         bottomBar.fillSprite(COLOR_BG);
     }
 
-    PorkchopMode mode = porkchop.getMode();
-    bool useAvatarWeather = (mode == PorkchopMode::IDLE ||
-        mode == PorkchopMode::OINK_MODE ||
-        mode == PorkchopMode::DNH_MODE ||
-        mode == PorkchopMode::WARHOG_MODE ||
-        mode == PorkchopMode::PIGGYBLUES_MODE ||
-        mode == PorkchopMode::BACON_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool useAvatarWeather = (mode == AP_ElimMode::IDLE ||
+        mode == AP_ElimMode::OINK_MODE ||
+        mode == AP_ElimMode::DNH_MODE ||
+        mode == AP_ElimMode::WARHOG_MODE ||
+        mode == AP_ElimMode::PIGGYBLUES_MODE ||
+        mode == AP_ElimMode::BACON_MODE);
 
     // Draw main content based on mode - reset all canvas state
     // Thunder flash inverts the background color, FG becomes BG
@@ -301,7 +301,7 @@ void Display::update() {
     mainCanvas.setFont(&fonts::Font0);  // Reset to default font
     
     switch (mode) {
-        case PorkchopMode::IDLE:
+        case AP_ElimMode::IDLE:
             // Draw piglet avatar
             Avatar::draw(mainCanvas);
             // Draw clouds above stars/pig before rain
@@ -312,10 +312,10 @@ void Display::update() {
             Mood::draw(mainCanvas);
             break;
             
-        case PorkchopMode::OINK_MODE:
-        case PorkchopMode::DNH_MODE:
-        case PorkchopMode::WARHOG_MODE:
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::OINK_MODE:
+        case AP_ElimMode::DNH_MODE:
+        case AP_ElimMode::WARHOG_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             // Draw piglet avatar
             Avatar::draw(mainCanvas);
             // Draw clouds above stars/pig before rain
@@ -326,79 +326,79 @@ void Display::update() {
             Mood::draw(mainCanvas);
             break;
 
-        case PorkchopMode::PIGSYNC_DEVICE_SELECT:
+        case AP_ElimMode::PIGSYNC_DEVICE_SELECT:
             // Draw device selection menu
             drawPigSyncDeviceSelect(mainCanvas);
             break;
 
             
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             // Spectrum mode draws its own content including XP bar
             SpectrumMode::draw(mainCanvas);
             break;
             
-        case PorkchopMode::MENU:
+        case AP_ElimMode::MENU:
             // Draw menu
             Menu::update();
             Menu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::SETTINGS:
+        case AP_ElimMode::SETTINGS:
             SettingsMenu::update();
             SettingsMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::CAPTURES:
+        case AP_ElimMode::CAPTURES:
             CapturesMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::ACHIEVEMENTS:
+        case AP_ElimMode::ACHIEVEMENTS:
             AchievementsMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::ABOUT:
+        case AP_ElimMode::ABOUT:
             drawAboutScreen(mainCanvas);
             break;
             
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             drawFileTransferScreen(mainCanvas);
             break;
             
-        case PorkchopMode::CRASH_VIEWER:
+        case AP_ElimMode::CRASH_VIEWER:
             CrashViewer::draw(mainCanvas);
             break;
 
-        case PorkchopMode::DIAGNOSTICS:
+        case AP_ElimMode::DIAGNOSTICS:
             DiagnosticsMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::SWINE_STATS:
+        case AP_ElimMode::SWINE_STATS:
             SwineStats::draw(mainCanvas);
             break;
             
-        case PorkchopMode::BOAR_BROS:
+        case AP_ElimMode::BOAR_BROS:
             BoarBrosMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::WIGLE_MENU:
+        case AP_ElimMode::WIGLE_MENU:
             WigleMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::UNLOCKABLES:
+        case AP_ElimMode::UNLOCKABLES:
             UnlockablesMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::BOUNTY_STATUS:
+        case AP_ElimMode::BOUNTY_STATUS:
             BountyStatusMenu::draw(mainCanvas);
             break;
             
-        case PorkchopMode::BACON_MODE:
+        case AP_ElimMode::BACON_MODE:
             BaconMode::draw(mainCanvas);
             break;
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::SD_FORMAT:
             SdFormatMenu::draw(mainCanvas);
             break;
-        case PorkchopMode::CHARGING:
+        case AP_ElimMode::CHARGING:
             ChargingMode::draw(mainCanvas);
             break;
     }
@@ -548,92 +548,92 @@ void Display::drawTopBar() {
     topBar.setTextSize(1);
     
     // Left side: mode indicator
-    PorkchopMode mode = porkchop.getMode();
+    AP_ElimMode mode = ap_elim.getMode();
     char modeBuf[40];
     modeBuf[0] = '\0';
     uint16_t modeColor = COLOR_FG;
     
     switch (mode) {
-        case PorkchopMode::IDLE:
+        case AP_ElimMode::IDLE:
             snprintf(modeBuf, sizeof(modeBuf), "IDLE");
             break;
-        case PorkchopMode::OINK_MODE:
+        case AP_ElimMode::OINK_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "OINKS");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::DNH_MODE:
+        case AP_ElimMode::DNH_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "DONOHAM");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::WARHOG_MODE:
+        case AP_ElimMode::WARHOG_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "SGT WARHOG");
             modeColor = COLOR_DANGER;
             break;
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "BLUES");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "HOG ON SPECTRUM");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::MENU:
+        case AP_ElimMode::MENU:
             snprintf(modeBuf, sizeof(modeBuf), "MENU");
             break;
-        case PorkchopMode::SETTINGS:
+        case AP_ElimMode::SETTINGS:
             snprintf(modeBuf, sizeof(modeBuf), "CONFIG");
             break;
-        case PorkchopMode::ABOUT:
+        case AP_ElimMode::ABOUT:
             snprintf(modeBuf, sizeof(modeBuf), "ABOUTPIG");
             break;
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             snprintf(modeBuf, sizeof(modeBuf), "XFER");
             modeColor = COLOR_SUCCESS;
             break;
-        case PorkchopMode::CRASH_VIEWER:
+        case AP_ElimMode::CRASH_VIEWER:
             snprintf(modeBuf, sizeof(modeBuf), "COREDUMP");
             break;
-        case PorkchopMode::DIAGNOSTICS:
+        case AP_ElimMode::DIAGNOSTICS:
             snprintf(modeBuf, sizeof(modeBuf), "DIAGDATA");
             break;
-        case PorkchopMode::CAPTURES:
+        case AP_ElimMode::CAPTURES:
             snprintf(modeBuf, sizeof(modeBuf), "L00T (%u)", (unsigned)CapturesMenu::getCount());
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::ACHIEVEMENTS:
+        case AP_ElimMode::ACHIEVEMENTS:
             snprintf(modeBuf, sizeof(modeBuf), "PR00F (%u/%u)", 
                      (unsigned)XP::getUnlockedCount(), (unsigned)AchievementsMenu::TOTAL_ACHIEVEMENTS);
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::SWINE_STATS:
+        case AP_ElimMode::SWINE_STATS:
             snprintf(modeBuf, sizeof(modeBuf), "SW1N3 ST4TS");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::BOAR_BROS:
+        case AP_ElimMode::BOAR_BROS:
             snprintf(modeBuf, sizeof(modeBuf), "B04R BR0S (%u)", (unsigned)BoarBrosMenu::getCount());
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::WIGLE_MENU:
+        case AP_ElimMode::WIGLE_MENU:
             snprintf(modeBuf, sizeof(modeBuf), "PORK TR4CKS (%u)", (unsigned)WigleMenu::getCount());
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::UNLOCKABLES:
+        case AP_ElimMode::UNLOCKABLES:
             snprintf(modeBuf, sizeof(modeBuf), "UNL0CK4BL3S");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::BOUNTY_STATUS:
+        case AP_ElimMode::BOUNTY_STATUS:
             snprintf(modeBuf, sizeof(modeBuf), "B0UNT13S");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::BACON_MODE:
+        case AP_ElimMode::BACON_MODE:
             snprintf(modeBuf, sizeof(modeBuf), "BACON");
             modeColor = COLOR_ACCENT;
             break;
-        case PorkchopMode::SD_FORMAT:
+        case AP_ElimMode::SD_FORMAT:
             snprintf(modeBuf, sizeof(modeBuf), "SD FORMAT");
             modeColor = COLOR_WARNING;
             break;
-        case PorkchopMode::CHARGING:
+        case AP_ElimMode::CHARGING:
             snprintf(modeBuf, sizeof(modeBuf), "CHARGING");
             modeColor = COLOR_SUCCESS;
             break;
@@ -650,7 +650,7 @@ void Display::drawTopBar() {
     
     // Build final mode string with fixed buffer to prevent heap fragmentation
     char finalModeBuf[80];  // Ample size for mode + mood + PWNED + SSID
-    if (mode == PorkchopMode::OINK_MODE && lootSSID[0] != '\0') {
+    if (mode == AP_ElimMode::OINK_MODE && lootSSID[0] != '\0') {
         // Include PWNED banner - truncate SSID if needed to fit
         char upperLoot[20];  // Truncate SSID to 16 chars max for display
         strncpy(upperLoot, lootSSID, sizeof(upperLoot) - 1);
@@ -764,10 +764,10 @@ void Display::drawTopBarMessageTwoLineDirect() {
 }
 
 void Display::drawBottomBar() {
-    PorkchopMode mode = porkchop.getMode();
+    AP_ElimMode mode = ap_elim.getMode();
 
     // Set colors based on mode - PIGSYNC_DEVICE_SELECT uses normal colors, others use inverted
-    if (mode == PorkchopMode::PIGSYNC_DEVICE_SELECT) {
+    if (mode == AP_ElimMode::PIGSYNC_DEVICE_SELECT) {
         bottomBar.fillSprite(COLOR_BG);  // Normal BG background
         bottomBar.setTextColor(COLOR_FG);  // Normal FG text
     } else {
@@ -788,7 +788,7 @@ void Display::drawBottomBar() {
     const char* statsStr = "";
     bool showHealthBar = false;
     
-    if (mode == PorkchopMode::WARHOG_MODE) {
+    if (mode == AP_ElimMode::WARHOG_MODE) {
         // WARHOG: show unique networks, saved, distance, GPS info
         uint32_t unique = WarhogMode::getTotalNetworks();
         uint32_t saved = WarhogMode::getSavedCount();
@@ -815,29 +815,29 @@ void Display::drawBottomBar() {
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::CAPTURES) {
+    } else if (mode == AP_ElimMode::CAPTURES) {
         // CAPTURES: show selected capture's BSSID
         statsStr = CapturesMenu::getSelectedBSSID();
-    } else if (mode == PorkchopMode::WIGLE_MENU) {
+    } else if (mode == AP_ElimMode::WIGLE_MENU) {
         // WIGLE_MENU: show selected file info
         WigleMenu::getSelectedInfo(statsBuf, sizeof(statsBuf));
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::SETTINGS) {
+    } else if (mode == AP_ElimMode::SETTINGS) {
         // SETTINGS: show description of selected item
         statsStr = SettingsMenu::getSelectedDescription();
-    } else if (mode == PorkchopMode::MENU) {
+    } else if (mode == AP_ElimMode::MENU) {
         // MENU: show selected item description from Menu
         statsStr = Menu::getSelectedDescription();
-    } else if (mode == PorkchopMode::CRASH_VIEWER) {
+    } else if (mode == AP_ElimMode::CRASH_VIEWER) {
         // CRASH_VIEWER: show selected crash file or status
         CrashViewer::getStatusLine(statsBuf, sizeof(statsBuf));
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::DIAGNOSTICS) {
+    } else if (mode == AP_ElimMode::DIAGNOSTICS) {
         // DIAGNOSTICS: show controls
         statsStr = "[ENT]SAVE [R]WIFI [H]HEAP [G]GC";
-    } else if (mode == PorkchopMode::SD_FORMAT) {
+    } else if (mode == AP_ElimMode::SD_FORMAT) {
         statsStr = "ENTER=SELECT  BKSP=EXIT";
-    } else if (mode == PorkchopMode::OINK_MODE) {
+    } else if (mode == AP_ElimMode::OINK_MODE) {
         // OINK: show Networks, Handshakes, Deauths, Channel, and optionally BRO count
         // PWNED banner is shown in top bar
         // In LOCKING state, show target SSID and client discovery count
@@ -883,7 +883,7 @@ void Display::drawBottomBar() {
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::BACON_MODE) {
+    } else if (mode == AP_ElimMode::BACON_MODE) {
         // BACON: session time, SSID, channel (uptime shown on right separately)
         uint32_t sessionTime = BaconMode::getSessionTime();
         
@@ -893,7 +893,7 @@ void Display::drawBottomBar() {
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::DNH_MODE) {
+    } else if (mode == AP_ElimMode::DNH_MODE) {
         // DNH: Networks, PMKIDs, Handshakes, Channel
         uint16_t netCount = DoNoHamMode::getNetworkCount();
         uint16_t pmkidCount = DoNoHamMode::getPMKIDCount();
@@ -904,7 +904,7 @@ void Display::drawBottomBar() {
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::PIGGYBLUES_MODE) {
+    } else if (mode == AP_ElimMode::PIGGYBLUES_MODE) {
         // PIGGYBLUES: TX:total A:apple G:android S:samsung W:windows
         uint32_t total = PiggyBluesMode::getTotalPackets();
         uint32_t apple = PiggyBluesMode::getAppleCount();
@@ -916,32 +916,32 @@ void Display::drawBottomBar() {
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::SPECTRUM_MODE) {
+    } else if (mode == AP_ElimMode::SPECTRUM_MODE) {
         // SPECTRUM: show selected network info or scan status
         SpectrumMode::getSelectedInfo(statsBuf, sizeof(statsBuf));
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::BOAR_BROS) {
+    } else if (mode == AP_ElimMode::BOAR_BROS) {
         // BOAR BROS: show delete hint
         statsStr = "[D] DELETE";
-    } else if (mode == PorkchopMode::BOUNTY_STATUS) {
+    } else if (mode == AP_ElimMode::BOUNTY_STATUS) {
         // BOUNTY STATUS: show selected info
         BountyStatusMenu::getSelectedInfo(statsBuf, sizeof(statsBuf));
         statsStr = statsBuf;
-    } else if (mode == PorkchopMode::IDLE) {
+    } else if (mode == AP_ElimMode::IDLE) {
         // IDLE: show Networks only (HS shown in OINK)
-        uint16_t netCount = porkchop.getNetworkCount();
+        uint16_t netCount = ap_elim.getNetworkCount();
         char buf[24];
         snprintf(buf, sizeof(buf), "N:%03d", netCount);
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
         showHealthBar = true;
-    } else if (mode == PorkchopMode::PIGSYNC_DEVICE_SELECT) {
+    } else if (mode == AP_ElimMode::PIGSYNC_DEVICE_SELECT) {
         // PIGSYNC_DEVICE_SELECT: control hints (state shown in terminal)
         statsStr = "ENTER=CALL UP/DN=SELECT ESC=EXIT";
     } else {
         // Default: Networks only (HS shown in active modes)
-        uint16_t netCount = porkchop.getNetworkCount();
+        uint16_t netCount = ap_elim.getNetworkCount();
         char buf[32];
         snprintf(buf, sizeof(buf), "N:%03d", netCount);
         strncpy(statsBuf, buf, sizeof(statsBuf) - 1);
@@ -982,30 +982,30 @@ void Display::drawBottomBar() {
     
     // Right: uptime or PIGSYNC channel
     bottomBar.setTextDatum(top_right);
-    if (mode == PorkchopMode::PIGSYNC_DEVICE_SELECT) {
+    if (mode == AP_ElimMode::PIGSYNC_DEVICE_SELECT) {
         char chBuf[12];
         uint8_t ch = PigSyncMode::getDataChannel();
         snprintf(chBuf, sizeof(chBuf), "CH:%02d", ch);
         bottomBar.drawString(chBuf, DISPLAY_W - 2, 3);
-    } else if (mode == PorkchopMode::MENU ||
-               mode == PorkchopMode::SETTINGS ||
-               mode == PorkchopMode::CAPTURES ||
-               mode == PorkchopMode::ACHIEVEMENTS ||
-               mode == PorkchopMode::ABOUT ||
-               mode == PorkchopMode::FILE_TRANSFER ||
-               mode == PorkchopMode::CRASH_VIEWER ||
-               mode == PorkchopMode::DIAGNOSTICS ||
-               mode == PorkchopMode::SWINE_STATS ||
-               mode == PorkchopMode::BOAR_BROS ||
-               mode == PorkchopMode::WIGLE_MENU ||
-               mode == PorkchopMode::UNLOCKABLES ||
-               mode == PorkchopMode::BOUNTY_STATUS ||
-               mode == PorkchopMode::SD_FORMAT ||
-               mode == PorkchopMode::OINK_MODE || 
-               mode == PorkchopMode::DNH_MODE) {
+    } else if (mode == AP_ElimMode::MENU ||
+               mode == AP_ElimMode::SETTINGS ||
+               mode == AP_ElimMode::CAPTURES ||
+               mode == AP_ElimMode::ACHIEVEMENTS ||
+               mode == AP_ElimMode::ABOUT ||
+               mode == AP_ElimMode::FILE_TRANSFER ||
+               mode == AP_ElimMode::CRASH_VIEWER ||
+               mode == AP_ElimMode::DIAGNOSTICS ||
+               mode == AP_ElimMode::SWINE_STATS ||
+               mode == AP_ElimMode::BOAR_BROS ||
+               mode == AP_ElimMode::WIGLE_MENU ||
+               mode == AP_ElimMode::UNLOCKABLES ||
+               mode == AP_ElimMode::BOUNTY_STATUS ||
+               mode == AP_ElimMode::SD_FORMAT ||
+               mode == AP_ElimMode::OINK_MODE || 
+               mode == AP_ElimMode::DNH_MODE) {
         // No uptime on menu and submenu screens
     } else {
-        uint32_t uptime = porkchop.getUptime();
+        uint32_t uptime = ap_elim.getUptime();
         uint16_t mins = uptime / 60;
         uint16_t secs = uptime % 60;
         char uptimeBuf[12];
@@ -1227,43 +1227,50 @@ static void bootSplashDelay(uint32_t ms) {
     }
 }
 
-// Boot splash - 3 screens: OINK OINK, MY NAME IS, PORKCHOP
+// Boot splash - 3 screens: OINK OINK, MY NAME IS, AP_ELIM
 void Display::showBootSplash() {
     // Ensure splash uses 8-bit RGB332 to match sprite palette and avoid 16-bit conversion costs.
     // Splash draws directly to the display (no sprite heap allocation), but color depth still matters.
     M5.Display.setColorDepth(8);
 
-    // Screen 1: OINK OINK
-    M5.Display.fillScreen(COLOR_BG);
-    M5.Display.setTextColor(COLOR_FG);
+    // Screen 1: AP ELIM — THE DETECTIVE
+    M5.Display.fillScreen(0x0000);
+    M5.Display.setTextColor(TFT_RED);
     M5.Display.setTextDatum(middle_center);
     M5.Display.setTextSize(4);
-    M5.Display.drawString("OINK", DISPLAY_W / 2, DISPLAY_H / 2 - 20);
-    M5.Display.drawString("OINK", DISPLAY_W / 2, DISPLAY_H / 2 + 20);
-    
-    // Pig wake-up grunt: "oink oink"
-    SFX::play(SFX::BOOT);
-    
-    bootSplashDelay(800);
-    
-    // Screen 2: MY NAME IS
-    M5.Display.fillScreen(COLOR_BG);
-    M5.Display.setTextSize(3);
-    M5.Display.drawString("MY NAME IS", DISPLAY_W / 2, DISPLAY_H / 2);
-    bootSplashDelay(800);
-    
-    // Screen 3: PORKCHOP in big stylized text
-    M5.Display.fillScreen(COLOR_BG);
-    M5.Display.setTextDatum(middle_center);
-    M5.Display.setTextSize(3);
-    M5.Display.drawString("PORKCHOP", DISPLAY_W / 2, DISPLAY_H / 2 - 15);
-    
-    // Subtitle
+    M5.Display.drawString("AP", DISPLAY_W / 2 - 30, DISPLAY_H / 2 - 15);
+    M5.Display.drawString("ELIM", DISPLAY_W / 2 - 35, DISPLAY_H / 2 + 15);
     M5.Display.setTextSize(1);
-    M5.Display.drawString("BASICALLY YOU, BUT AS AN ASCII PIG.", DISPLAY_W / 2, DISPLAY_H / 2 + 20);
-    M5.Display.drawString("IDENTITY CRISIS EDITION.", DISPLAY_W / 2, DISPLAY_H / 2 + 35);
+    M5.Display.setTextColor(TFT_DARKGREY);
+    M5.Display.drawString("gh0$t was here", DISPLAY_W / 2, DISPLAY_H / 2 + 45);
+    
+    SFX::play(SFX::BOOT);
+    bootSplashDelay(1000);
+    
+    // Screen 2: gh0$t WAS HERE — creator credit
+    M5.Display.fillScreen(0x0000);
+    M5.Display.setTextColor(TFT_PURPLE);
+    M5.Display.setTextSize(2);
+    M5.Display.drawString("CREATED BY", DISPLAY_W / 2, DISPLAY_H / 2 - 25);
+    M5.Display.setTextSize(3);
+    M5.Display.setTextColor(TFT_RED);
+    M5.Display.drawString("gh0$t", DISPLAY_W / 2, DISPLAY_H / 2 + 5);
+    bootSplashDelay(1000);
+    
+    // Screen 3: AP_ELIM title screen
+    M5.Display.fillScreen(0x0000);
+    M5.Display.setTextColor(TFT_RED);
+    M5.Display.setTextSize(3);
+    M5.Display.drawString("AP_ELIM", DISPLAY_W / 2, DISPLAY_H / 2 - 20);
+    
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(TFT_DARKGREY);
+    M5.Display.drawString("THE DETECTIVE", DISPLAY_W / 2, DISPLAY_H / 2 + 10);
+    M5.Display.setTextColor(0x4208);
+    M5.Display.drawString("surveillance threat detection system", DISPLAY_W / 2, DISPLAY_H / 2 + 25);
+    M5.Display.drawString("by gh0$t — all cases confidential", DISPLAY_W / 2, DISPLAY_H / 2 + 40);
 
-    bootSplashDelay(1200);
+    bootSplashDelay(2000);
 
     // Screen 4 (optional): Welcome back when callsign is set
     const char* cs = Config::personality().callsign;
@@ -2535,12 +2542,12 @@ void Display::setMLStatus(bool active) {
 
 
 // Helper functions for mode screens
-void Display::drawModeInfo(M5Canvas& canvas, PorkchopMode mode) {
+void Display::drawModeInfo(M5Canvas& canvas, AP_ElimMode mode) {
     canvas.setTextColor(COLOR_FG);
     canvas.setTextDatum(top_left);
     canvas.setTextSize(1);
     
-    if (mode == PorkchopMode::OINK_MODE) {
+    if (mode == AP_ElimMode::OINK_MODE) {
         const auto& networks = OinkMode::getNetworks();
         int selIdx = OinkMode::getSelectionIndex();
         DetectedNetwork* target = OinkMode::getTarget();
@@ -2586,7 +2593,7 @@ void Display::drawModeInfo(M5Canvas& canvas, PorkchopMode mode) {
         snprintf(stats, sizeof(stats), "N:%03d HS:%02d D:%04lu [ESC]=STOP", 
                  (int)networks.size(), hsCount, deauthCnt);
         canvas.drawString(stats, 2, MAIN_H - 12);
-    } else if (mode == PorkchopMode::WARHOG_MODE) {
+    } else if (mode == AP_ElimMode::WARHOG_MODE) {
         // Show wardriving info
         canvas.drawString("WARDRIVING MODE ACTIVE", 2, MAIN_H - 25);
         canvas.drawString("COLLECTING GPS + WIFI DATA", 2, MAIN_H - 15);
@@ -2618,7 +2625,7 @@ static const char* ABOUT_QUOTES[] = {
     "HACK THE PLANET",
     "SHALL WE PLAY A GAME",
     "sudo make me bacon",
-    "root@porkchop:~#",
+    "root@ap_elim:~#",
     "WHILE(1) { PWN(); }",
     "#!/usr/bin/oink",
     "0WN3D BY 0ct0",
@@ -2671,7 +2678,7 @@ void Display::drawAboutScreen(M5Canvas& canvas) {
     // Title
     canvas.setTextSize(2);
     canvas.setTextColor(COLOR_ACCENT);
-    canvas.drawString("M5PORKCHOP", DISPLAY_W / 2, 5);
+    canvas.drawString("M5AP_ELIM", DISPLAY_W / 2, 5);
     
     // Version
     canvas.setTextSize(1);
@@ -2682,7 +2689,7 @@ void Display::drawAboutScreen(M5Canvas& canvas) {
     canvas.drawString("BY 0ct0", DISPLAY_W / 2, 38);
     
     // GitHub
-    canvas.drawString("GITHUB.COM/0CT0SEC/M5PORKCHOP", DISPLAY_W / 2, 50);
+    canvas.drawString("GITHUB.COM/0CT0SEC/M5AP_ELIM", DISPLAY_W / 2, 50);
     
     // Commit hash, uppercase the value
     canvas.setTextColor(COLOR_ACCENT);
@@ -2737,7 +2744,7 @@ void Display::drawFileTransferScreen(M5Canvas& canvas) {
         snprintf(ipBuf, sizeof(ipBuf), "%u.%u.%u.%u",
                  ip[0], ip[1], ip[2], ip[3]);
         snprintf(line2, sizeof(line2), "HTTP://%s", ipBuf);
-        strncpy(line3, "HTTP://PORKCHOP.LOCAL", sizeof(line3) - 1);
+        strncpy(line3, "HTTP://AP_ELIM.LOCAL", sizeof(line3) - 1);
         hasLine2 = true;
         hasLine3 = true;
     } else if (FileServer::isRunning()) {

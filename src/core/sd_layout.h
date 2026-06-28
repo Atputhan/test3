@@ -9,8 +9,8 @@ namespace SDLayout {
     void setUseNewLayout(bool enable);
 
     // Root markers
-    const char* newRoot();               // "/m5porkchop"
-    const char* migrationMarkerPath();   // "/m5porkchop/meta/.migrated_v1"
+    const char* newRoot();               // "/m5ap_elim"
+    const char* migrationMarkerPath();   // "/m5ap_elim/meta/.migrated_v1"
 
     // Directories (resolved to legacy or new layout)
     const char* handshakesDir();

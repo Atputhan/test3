@@ -1,5 +1,5 @@
 /**
- * PigSync ESP-NOW Client Implementation (Porkchop/POPS side)
+ * PigSync ESP-NOW Client Implementation (AP_Elim/POPS side)
  * 
  * SON OF A PIG - Reliable sync with Sirloin devices
  */
@@ -1351,7 +1351,7 @@ void PigSyncMode::update() {
             // Adjust for half of RTT (one-way latency)
             uint32_t adjustedTime = unixTime + (rtt / 2000);  // RTT in ms -> sec/2
             
-            // Set Porkchop's system time from Sirloin's RTC
+            // Set AP_Elim's system time from Sirloin's RTC
             struct timeval tv;
             tv.tv_sec = adjustedTime;
             tv.tv_usec = 0;
@@ -2114,10 +2114,10 @@ void PigSyncMode::sendTimeSync() {
     CmdTimeSync pkt;
     uint8_t seq = reliability.nextSeq();
     initHeader(&pkt.hdr, CMD_TIME_SYNC, seq, reliability.lastRxSeq, sessionId);
-    pkt.porkchopMillis = millis();  // For RTT calculation
+    pkt.ap_elimMillis = millis();  // For RTT calculation
     
     sendControlPacket(connectedMac, (uint8_t*)&pkt, sizeof(pkt), CMD_TIME_SYNC, seq);
-    PIGSYNC_LOGF("[PIGSYNC-CLI-TX] CMD_TIME_SYNC millis=%lu\n", pkt.porkchopMillis);
+    PIGSYNC_LOGF("[PIGSYNC-CLI-TX] CMD_TIME_SYNC millis=%lu\n", pkt.ap_elimMillis);
 }
 
 void PigSyncMode::sendPurge() {

@@ -527,10 +527,10 @@ void Menu::drawRoot(M5Canvas& canvas) {
     canvas.setTextSize(2);
     char titleBuf[32];
     const RootItem& sel = ROOT_ITEMS[rootIdx];
-    if (sel.icon && sel.icon[0] && strlen(sel.icon) < sizeof(titleBuf) - 10) {  // Ensure enough space for " PORKCHOP OS"
-        snprintf(titleBuf, sizeof(titleBuf), "%s PORKCHOP OS", sel.icon);
+    if (sel.icon && sel.icon[0] && strlen(sel.icon) < sizeof(titleBuf) - 10) {  // Ensure enough space for " AP_ELIM OS"
+        snprintf(titleBuf, sizeof(titleBuf), "%s AP_ELIM OS", sel.icon);
     } else {
-        strncpy(titleBuf, "PORKCHOP OS", sizeof(titleBuf) - 1);
+        strncpy(titleBuf, "AP_ELIM OS", sizeof(titleBuf) - 1);
         titleBuf[sizeof(titleBuf) - 1] = '\0';
     }
     canvas.drawString(titleBuf, DISPLAY_W / 2, 2);

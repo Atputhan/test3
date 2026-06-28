@@ -361,7 +361,7 @@ void BaconMode::buildVendorIE(uint8_t* buffer, size_t* len, uint8_t apCountOverr
     buffer[offset++] = 0xDD;  // Element ID: Vendor Specific
     buffer[offset++] = 0;     // Length (filled later)
     
-    // OUI: 0x50:52:4B (PRK = Porkchop)
+    // OUI: 0x50:52:4B (PRK = AP_Elim)
     buffer[offset++] = 0x50;
     buffer[offset++] = 0x52;
     buffer[offset++] = 0x4B;
@@ -525,4 +525,4 @@ void BaconMode::draw(M5Canvas& canvas) {
     // Bottom bar is handled automatically by Display::drawBottomBar()
 }
 
-// Input handling moved to Porkchop::handleInput() - backtick exits BACON_MODE to IDLE
+// Input handling moved to AP_Elim::handleInput() - backtick exits BACON_MODE to IDLE

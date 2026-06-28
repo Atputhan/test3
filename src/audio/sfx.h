@@ -1,5 +1,5 @@
 /**
- * SFX - Non-blocking Sound Effects Module for Porkchop
+ * SFX - Non-blocking Sound Effects Module for AP_Elim
  *
  * ==[ CHEF'S AUDIO ]== central beeps, no delay(), callback-safe enqueue.
  * 

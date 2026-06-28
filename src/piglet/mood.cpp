@@ -4,7 +4,7 @@
 #include "weather.h"
 #include "../core/config.h"
 #include "../core/xp.h"
-#include "../core/porkchop.h"
+#include "../core/ap_elim.h"
 #include "../core/heap_health.h"
 #include "../core/challenges.h"
 #include "../core/network_recon.h"
@@ -18,7 +18,7 @@
 #include <string.h>
 #include <time.h>
 
-extern Porkchop porkchop;
+extern AP_Elim ap_elim;
 
 // Phase 10: Mood persistence
 static Preferences moodPrefs;
@@ -756,8 +756,8 @@ static bool tryQueueRiddle() {
     if (riddleShownThisBoot) return false;
     
     // Only show riddles in IDLE mode
-    extern Porkchop porkchop;
-    if (porkchop.getMode() != PorkchopMode::IDLE) return false;
+    extern AP_Elim ap_elim;
+    if (ap_elim.getMode() != AP_ElimMode::IDLE) return false;
     
     // 30% chance per phrase cycle in IDLE - high enough to see it, rare enough to feel special
     if (random(0, 100) >= 30) return false;
@@ -1441,7 +1441,7 @@ void Mood::update() {
         
         // Random cute jump in IDLE mode when happy (0.5% chance per phrase cycle)
         // Makes the pig feel alive - spontaneous little hops
-        if (porkchop.getMode() == PorkchopMode::IDLE && getEffectiveHappiness() > 20) {
+        if (ap_elim.getMode() == AP_ElimMode::IDLE && getEffectiveHappiness() > 20) {
             if (random(0, 200) == 0) {  // 0.5% chance
                 Avatar::cuteJump();
             }
@@ -1488,9 +1488,9 @@ void Mood::onHandshakeCaptured(const char* apName) {
         snprintf(buf1, sizeof(buf1), templates[random(0, 4)], ap);
     } else {
         // Personality-aware excited phrases
-        PorkchopMode mode = porkchop.getMode();
-        bool isCD = (mode == PorkchopMode::DNH_MODE);
-        bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+        AP_ElimMode mode = ap_elim.getMode();
+        bool isCD = (mode == AP_ElimMode::DNH_MODE);
+        bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
         
         const char** excitedPhrases;
         int excitedCount;
@@ -1554,7 +1554,7 @@ void Mood::onPMKIDCaptured(const char* apName) {
     
     // Award XP for PMKID capture
     // If in DO NO HAM mode, award the rare ghost PMKID XP (100 XP!)
-    if (porkchop.getMode() == PorkchopMode::DNH_MODE) {
+    if (ap_elim.getMode() == AP_ElimMode::DNH_MODE) {
         XP::addXP(XPEvent::DNH_PMKID_GHOST);  // Rare passive PMKID!
     } else {
         XP::addXP(XPEvent::PMKID_CAPTURED);   // Regular 75 XP
@@ -1569,11 +1569,11 @@ void Mood::onPMKIDCaptured(const char* apName) {
     char buf1[48], buf2[48], buf3[48];
     
     // First phrase - PMKID celebration (personality-aware)
-    PorkchopMode mode = porkchop.getMode();
+    AP_ElimMode mode = ap_elim.getMode();
     const char** pmkidPhrases;
     int pmkidCount;
     
-    if (mode == PorkchopMode::DNH_MODE) {
+    if (mode == AP_ElimMode::DNH_MODE) {
         // C.D. caught a ghost PMKID - very rare!
         pmkidPhrases = PHRASES_PMKID_CD;
         pmkidCount = sizeof(PHRASES_PMKID_CD) / sizeof(PHRASES_PMKID_CD[0]);
@@ -1624,7 +1624,7 @@ void Mood::onNewNetwork(const char* apName, int8_t rssi, uint8_t channel) {
     
     // Award XP for network discovery
     // Check if in DO NO HAM mode for different XP event
-    bool isPassive = (porkchop.getMode() == PorkchopMode::DNH_MODE);
+    bool isPassive = (ap_elim.getMode() == AP_ElimMode::DNH_MODE);
     
     if (apName && strlen(apName) > 0) {
         if (isPassive) {
@@ -1685,9 +1685,9 @@ void Mood::onMLPrediction(float confidence) {
     lastActivityTime = millis();
     
     // Personality-aware phrases
-    PorkchopMode mode = porkchop.getMode();
-    bool isCD = (mode == PorkchopMode::DNH_MODE);
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isCD = (mode == AP_ElimMode::DNH_MODE);
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
     
     // High confidence = happy
     if (confidence > 0.8f) {
@@ -1754,15 +1754,15 @@ void Mood::onNoActivity(uint32_t seconds) {
         happiness = max(happiness - 2, -100);
         if (happiness < -20) {
             // Mode-aware boredom phrases
-            PorkchopMode mode = porkchop.getMode();
-            if (mode == PorkchopMode::OINK_MODE || mode == PorkchopMode::SPECTRUM_MODE) {
+            AP_ElimMode mode = ap_elim.getMode();
+            if (mode == AP_ElimMode::OINK_MODE || mode == AP_ElimMode::SPECTRUM_MODE) {
                 // In hunting modes, use quiet hunting phrases instead of generic sleepy
                 int idx = pickPhraseIdx(PhraseCategory::SLEEPY, sizeof(PHRASES_OINK_QUIET) / sizeof(PHRASES_OINK_QUIET[0]));
                 SET_PHRASE(currentPhrase, PHRASES_OINK_QUIET[idx]);
             } else {
                 // Personality-aware sleepy phrases
-                bool isCD = (mode == PorkchopMode::DNH_MODE);
-                bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+                bool isCD = (mode == AP_ElimMode::DNH_MODE);
+                bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
                 
                 const char** sleepyPhrases;
                 int sleepyCount;
@@ -1793,9 +1793,9 @@ void Mood::onWiFiLost() {
     lastActivityTime = millis();
     
     // Personality-aware sad phrases
-    PorkchopMode mode = porkchop.getMode();
-    bool isCD = (mode == PorkchopMode::DNH_MODE);
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isCD = (mode == AP_ElimMode::DNH_MODE);
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
     
     const char** sadPhrases;
     int sadCount;
@@ -1904,9 +1904,9 @@ bool Mood::pickTimePhraseIfDue(uint32_t now) {
     int8_t hour = getCurrentHour();
     if (hour < 0) return false;
 
-    PorkchopMode mode = porkchop.getMode();
-    bool isCD = (mode == PorkchopMode::DNH_MODE);
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isCD = (mode == AP_ElimMode::DNH_MODE);
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
 
     // Special times first (exact hour matches)
     if (hour == 13) {
@@ -2037,8 +2037,8 @@ bool Mood::pickGPSPhraseIfDue(uint32_t now) {
 
     GPSData gps = GPS::getData();
 
-    PorkchopMode mode = porkchop.getMode();
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
 
     // Bad GPS fix
     if (gps.fix && (gps.satellites < 4 || gps.hdop > 500)) {
@@ -2223,9 +2223,9 @@ bool Mood::pickWeatherPhraseIfDue(uint32_t now) {
     if (weatherState == lastWeatherState) return false;
     lastWeatherState = weatherState;
 
-    PorkchopMode mode = porkchop.getMode();
-    bool isCD = (mode == PorkchopMode::DNH_MODE);
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isCD = (mode == AP_ElimMode::DNH_MODE);
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
 
     const char* const* phrases;
     if (weatherState == 2) {  // storm
@@ -2313,12 +2313,12 @@ void Mood::selectPhrase() {
     PhraseCategory cat;
     
     // Get current mode for personality-specific phrase selection
-    PorkchopMode mode = porkchop.getMode();
-    bool isCD = (mode == PorkchopMode::DNH_MODE);
-    bool isWarhog = (mode == PorkchopMode::WARHOG_MODE);
+    AP_ElimMode mode = ap_elim.getMode();
+    bool isCD = (mode == AP_ElimMode::DNH_MODE);
+    bool isWarhog = (mode == AP_ElimMode::WARHOG_MODE);
     
     // RIDDLE SYSTEM: rare chance to queue cryptic challenge hints in IDLE
-    if (mode == PorkchopMode::IDLE && tryQueueRiddle()) {
+    if (mode == AP_ElimMode::IDLE && tryQueueRiddle()) {
         return;  // Riddle queued, skip normal phrase selection
     }
     
@@ -2499,16 +2499,16 @@ void Mood::updateAvatarState() {
     }
 
     // Mode-aware avatar state selection
-    PorkchopMode mode = porkchop.getMode();
+    AP_ElimMode mode = ap_elim.getMode();
     
     // Mood peek: detect threshold crossings and trigger peek
     // Only for mode-locked states (OINK, PIGGYBLUES, SPECTRUM)
-    bool isModeLockedState = (mode == PorkchopMode::OINK_MODE || 
-                               mode == PorkchopMode::PIGGYBLUES_MODE ||
-                               mode == PorkchopMode::SPECTRUM_MODE);
+    bool isModeLockedState = (mode == AP_ElimMode::OINK_MODE || 
+                               mode == AP_ElimMode::PIGGYBLUES_MODE ||
+                               mode == AP_ElimMode::SPECTRUM_MODE);
     
     // Track mode transitions to sync threshold on mode entry
-    static PorkchopMode lastMode = PorkchopMode::IDLE;
+    static AP_ElimMode lastMode = AP_ElimMode::IDLE;
     bool justEnteredModeLock = isModeLockedState && (lastMode != mode);
     lastMode = mode;
     
@@ -2561,8 +2561,8 @@ void Mood::updateAvatarState() {
     }
     
     switch (mode) {
-        case PorkchopMode::OINK_MODE:
-        case PorkchopMode::SPECTRUM_MODE:
+        case AP_ElimMode::OINK_MODE:
+        case AP_ElimMode::SPECTRUM_MODE:
             // Hunting modes: show HUNTING unless bored (mood peek handles emotional flashes)
             if (isBoredState) {
                 Avatar::setState(AvatarState::SLEEPY);
@@ -2571,12 +2571,12 @@ void Mood::updateAvatarState() {
             }
             break;
             
-        case PorkchopMode::PIGGYBLUES_MODE:
+        case AP_ElimMode::PIGGYBLUES_MODE:
             // Aggressive mode: ALWAYS show ANGRY (mood peek handles emotional flashes)
             Avatar::setState(AvatarState::ANGRY);
             break;
             
-        case PorkchopMode::WARHOG_MODE:
+        case AP_ElimMode::WARHOG_MODE:
             // Wardriving: relaxed hunting, biased toward happy
             if (effectiveMood > MOOD_PEEK_HIGH_THRESHOLD) {
                 Avatar::setState(AvatarState::EXCITED);
@@ -2587,7 +2587,7 @@ void Mood::updateAvatarState() {
             }
             break;
             
-        case PorkchopMode::FILE_TRANSFER:
+        case AP_ElimMode::FILE_TRANSFER:
             // File transfer: stay happy unless very sad
             if (effectiveMood > MOOD_PEEK_HIGH_THRESHOLD) {
                 Avatar::setState(AvatarState::EXCITED);

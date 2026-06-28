@@ -1,10 +1,10 @@
 #pragma once
 
-#ifndef PORKCHOP_LOG_ENABLED
-#define PORKCHOP_LOG_ENABLED 1
+#ifndef AP_ELIM_LOG_ENABLED
+#define AP_ELIM_LOG_ENABLED 1
 #endif
 
-#if !PORKCHOP_LOG_ENABLED
+#if !AP_ELIM_LOG_ENABLED
 #ifdef __cplusplus
 // Ensure core Serial is declared before we override it.
 #ifdef ARDUINO
@@ -13,7 +13,7 @@
 
 #if !defined(ARDUINO_CORE_BUILD)
 // Compile-time Serial sink to disable all logging with minimal overhead.
-struct PorkchopNullSerial {
+struct AP_ElimNullSerial {
     void begin(unsigned long, uint8_t = 0) {}
     void end() {}
     void flush() {}
@@ -43,9 +43,9 @@ struct PorkchopNullSerial {
     operator bool() const { return false; }
 };
 
-static PorkchopNullSerial PorkchopSerialSink;
+static AP_ElimNullSerial AP_ElimSerialSink;
 #undef Serial
-#define Serial PorkchopSerialSink
+#define Serial AP_ElimSerialSink
 #endif  // !ARDUINO_CORE_BUILD
 #endif  // __cplusplus
 #endif

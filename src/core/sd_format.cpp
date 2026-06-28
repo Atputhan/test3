@@ -72,7 +72,7 @@ SDFormat::Result makeResult(bool success, bool usedFallback, const char* msg) {
     return res;
 }
 
-bool wipePorkchopLayout() {
+bool wipeAP_ElimLayout() {
     const char* root = SDLayout::newRoot();
     if (SD.exists(root)) {
         if (!FileServer::deletePathRecursive(String(root))) {
@@ -427,7 +427,7 @@ Result formatCard(FormatMode mode, bool allowFallback, ProgressCallback cb) {
     reportProgress(cb, "FORMAT", 0);
     if (!fatfsFormat(pdrv, geo.bytes, geo.sectorSize)) {
         sdcard_uninit(pdrv);
-        if (allowFallback && Config::reinitSD() && wipePorkchopLayout()) {
+        if (allowFallback && Config::reinitSD() && wipeAP_ElimLayout()) {
             reportProgress(cb, "WIPE", 100);
             SDLog::setEnabled(logWasEnabled);
             return makeResult(true, true, "WIPE OK");
@@ -452,7 +452,7 @@ Result formatCard(FormatMode mode, bool allowFallback, ProgressCallback cb) {
 #endif
 
     // Fallback path when FATFS not available
-    if (allowFallback && Config::isSDAvailable() && wipePorkchopLayout()) {
+    if (allowFallback && Config::isSDAvailable() && wipeAP_ElimLayout()) {
         reportProgress(cb, "WIPE", 100);
         SDLog::setEnabled(logWasEnabled);
         return makeResult(true, true, "WIPE OK");

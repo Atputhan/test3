@@ -1,4 +1,4 @@
-// Porkchop core state machine
+// AP_Elim core state machine
 #pragma once
 
 #include <Arduino.h>
@@ -8,7 +8,7 @@
 #include "cursed.h"
 
 // Operating modes
-enum class PorkchopMode : uint8_t {
+enum class AP_ElimMode : uint8_t {
     IDLE = 0,       // Main screen, piglet idle
     OINK_MODE,      // Deauth + sniff mode
     DNH_MODE,       // DO NO HAM - passive recon (no attacks)
@@ -30,13 +30,15 @@ enum class PorkchopMode : uint8_t {
     BOUNTY_STATUS,  // View active bounties
     PIGSYNC_DEVICE_SELECT, // PigSync device selection
     PIGSYNC_CALL, // PigSync active call
+    THREATSCAN_MODE,  // Live surveillance threat radar
+    AUDIO_PLAYER_MODE, // WAV/MP3 player
     BACON_MODE,     // Hide and seek beacon broadcaster
     SD_FORMAT,      // SD card format utility
-    CHARGING        // Low power charging mode
+    CHARGING,        // Low power charging mode
 };
 
 // Events for async callbacks
-enum class PorkchopEvent : uint8_t {
+enum class AP_ElimEvent : uint8_t {
     NONE = 0,
     MODE_CHANGE,
     ML_RESULT,
@@ -51,11 +53,11 @@ enum class PorkchopEvent : uint8_t {
 };
 
 // Event callback type
-using EventCallback = std::function<void(PorkchopEvent, void*)>;
+using EventCallback = std::function<void(AP_ElimEvent, void*)>;
 
-class Porkchop {
+class AP_Elim {
 public:
-    Porkchop();
+    AP_Elim();
     
     void init();
     void triggerMassacre();
@@ -68,12 +70,12 @@ public:
 void update();
     
     // Mode control
-    void setMode(PorkchopMode mode);
-    PorkchopMode getMode() const { return currentMode; }
+    void setMode(AP_ElimMode mode);
+    AP_ElimMode getMode() const { return currentMode; }
     
     // Event system
-    void postEvent(PorkchopEvent event, void* data = nullptr);
-    void registerCallback(PorkchopEvent event, EventCallback callback);
+    void postEvent(AP_ElimEvent event, void* data = nullptr);
+    void registerCallback(AP_ElimEvent event, EventCallback callback);
     
     // Stats
     uint32_t getUptime() const;
@@ -82,8 +84,8 @@ void update();
     uint16_t getDeauthCount() const;      // Gets from OinkMode
     
 private:
-    PorkchopMode currentMode;
-    PorkchopMode previousMode;
+    AP_ElimMode currentMode;
+    AP_ElimMode previousMode;
     
     uint32_t startTime;
     uint16_t handshakeCount;
@@ -92,18 +94,18 @@ private:
 
     // Boot mode auto-entry
     bool bootModePending = false;
-    PorkchopMode bootModeTarget = PorkchopMode::IDLE;
+    AP_ElimMode bootModeTarget = AP_ElimMode::IDLE;
     bool shutdownAnimating = false;
     uint32_t bootModeStartMs = 0;
     
     // Event queue with max capacity to prevent memory exhaustion
     static constexpr size_t MAX_EVENT_QUEUE_SIZE = 32;  // Prevent runaway allocations
     struct EventItem {
-        PorkchopEvent event;
+        AP_ElimEvent event;
         void* data;
     };
     std::vector<EventItem> eventQueue;
-    std::vector<std::pair<PorkchopEvent, EventCallback>> callbacks;
+    std::vector<std::pair<AP_ElimEvent, EventCallback>> callbacks;
     
     void processEvents();
     void handleInput();

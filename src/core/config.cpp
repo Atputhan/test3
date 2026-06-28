@@ -40,12 +40,12 @@ static bool sdAvailable = false;
 // ---- Binary config blob (zero heap allocation) ----
 static constexpr uint32_t CONFIG_MAGIC   = 0x504F524B;  // 'PORK'
 static constexpr uint16_t CONFIG_VERSION = 1;
-#define CONFIG_BIN_FILE "/porkchop.dat"
+#define CONFIG_BIN_FILE "/ap_elim.dat"
 
 static const char* configBinPathSD() {
     return SDLayout::usingNewLayout()
-        ? "/m5porkchop/config/porkchop.dat"
-        : "/porkchop.dat";
+        ? "/m5ap_elim/config/ap_elim.dat"
+        : "/ap_elim.dat";
 }
 
 struct __attribute__((packed)) ConfigBlob {
@@ -353,10 +353,10 @@ bool Config::init() {
         Serial.println("[CONFIG] WiGLE API keys loaded from file");
     }
 
-    // Merge creds from JSON porkchop.conf if present (handles the case where
+    // Merge creds from JSON ap_elim.conf if present (handles the case where
     // binary config already exists but user dropped a new .conf with creds)
     if (importCredsFromJsonConf()) {
-        Serial.println("[CONFIG] Credentials imported from porkchop.conf");
+        Serial.println("[CONFIG] Credentials imported from ap_elim.conf");
     }
 
     initialized = true;
@@ -527,7 +527,7 @@ bool Config::applyJson(const JsonDocument& doc) {
     if (doc["ml"].is<JsonObject>()) {
         mlConfig.enabled = doc["ml"]["enabled"] | true;
         mlConfig.collectionMode = static_cast<MLCollectionMode>(doc["ml"]["collectionMode"] | 0);
-        const char* mp = doc["ml"]["modelPath"] | "/m5porkchop/models/porkchop_model.bin";
+        const char* mp = doc["ml"]["modelPath"] | "/m5ap_elim/models/ap_elim_model.bin";
         strncpy(mlConfig.modelPath, mp, sizeof(mlConfig.modelPath) - 1);
         mlConfig.modelPath[sizeof(mlConfig.modelPath) - 1] = '\0';
         if (sdAvailable && SDLayout::usingNewLayout()) {
@@ -619,17 +619,17 @@ bool Config::load() {
         return true;
     }
 
-    // 1b. Try legacy binary path on SD (migration may not have moved porkchop.dat)
+    // 1b. Try legacy binary path on SD (migration may not have moved ap_elim.dat)
     if (sdAvailable && SDLayout::usingNewLayout()) {
-        if (readBlobFrom((fs::FS&)SD, "/porkchop.dat", blob)) {
+        if (readBlobFrom((fs::FS&)SD, "/ap_elim.dat", blob)) {
             extractBlob(blob, gpsConfig, wifiConfig, bleConfig, mlConfig);
             sanitizeWiFiConfig(wifiConfig);
             Serial.println("[CONFIG] Loaded binary from legacy SD path, migrating...");
             // Move to new location and mirror to SPIFFS
             writeBlobTo((fs::FS&)SD, configBinPathSD(), blob);
             writeBlobTo((fs::FS&)SPIFFS, CONFIG_BIN_FILE, blob);
-            SD.remove("/porkchop.dat");
-            Serial.println("[CONFIG] Migrated porkchop.dat to new layout path");
+            SD.remove("/ap_elim.dat");
+            Serial.println("[CONFIG] Migrated ap_elim.dat to new layout path");
             return true;
         }
     }
@@ -692,7 +692,7 @@ bool Config::loadPersonality() {
         return false;
     }
 
-    const char* name = doc["name"] | "Porkchop";
+    const char* name = doc["name"] | "AP_Elim";
     strncpy(personalityConfig.name, name, sizeof(personalityConfig.name) - 1);
     personalityConfig.name[sizeof(personalityConfig.name) - 1] = '\0';
 
@@ -790,7 +790,7 @@ bool Config::createDefaultConfig() {
 }
 
 bool Config::createDefaultPersonality() {
-    strncpy(personalityConfig.name, "Porkchop", sizeof(personalityConfig.name) - 1);
+    strncpy(personalityConfig.name, "AP_Elim", sizeof(personalityConfig.name) - 1);
     personalityConfig.name[sizeof(personalityConfig.name) - 1] = '\0';
     personalityConfig.mood = 50;
     personalityConfig.experience = 0;
@@ -987,7 +987,7 @@ bool Config::importCredsFromJsonConf() {
     if (key[0] != '\0') {
         strncpy(wifiConfig.wpaSecKey, key, sizeof(wifiConfig.wpaSecKey) - 1);
         wifiConfig.wpaSecKey[sizeof(wifiConfig.wpaSecKey) - 1] = '\0';
-        Serial.println("[CONFIG] importCreds: WPA-SEC key merged from porkchop.conf");
+        Serial.println("[CONFIG] importCreds: WPA-SEC key merged from ap_elim.conf");
         merged = true;
     }
 
@@ -996,7 +996,7 @@ bool Config::importCredsFromJsonConf() {
     if (apiName[0] != '\0') {
         strncpy(wifiConfig.wigleApiName, apiName, sizeof(wifiConfig.wigleApiName) - 1);
         wifiConfig.wigleApiName[sizeof(wifiConfig.wigleApiName) - 1] = '\0';
-        Serial.println("[CONFIG] importCreds: WiGLE API name merged from porkchop.conf");
+        Serial.println("[CONFIG] importCreds: WiGLE API name merged from ap_elim.conf");
         merged = true;
     }
 
@@ -1005,13 +1005,13 @@ bool Config::importCredsFromJsonConf() {
     if (apiToken[0] != '\0') {
         strncpy(wifiConfig.wigleApiToken, apiToken, sizeof(wifiConfig.wigleApiToken) - 1);
         wifiConfig.wigleApiToken[sizeof(wifiConfig.wigleApiToken) - 1] = '\0';
-        Serial.println("[CONFIG] importCreds: WiGLE API token merged from porkchop.conf");
+        Serial.println("[CONFIG] importCreds: WiGLE API token merged from ap_elim.conf");
         merged = true;
     }
 
     if (merged) {
         save();
-        SDLog::log("CFG", "Credentials imported from porkchop.conf");
+        SDLog::log("CFG", "Credentials imported from ap_elim.conf");
     }
 
     // Delete the JSON conf after import (same pattern as key files)

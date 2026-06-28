@@ -1,4 +1,4 @@
-// Porkchop RPG XP and Leveling System Implementation
+// AP_Elim RPG XP and Leveling System Implementation
 
 #include "xp.h"
 #include "sdlog.h"

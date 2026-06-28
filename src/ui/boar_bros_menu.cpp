@@ -199,7 +199,7 @@ void BoarBrosMenu::handleInput() {
     // Backspace - go back
     if (M5Cardputer.Keyboard.isKeyPressed(KEY_BACKSPACE)) {
         hide();
-        // Return to menu handled by porkchop.cpp
+        // Return to menu handled by ap_elim.cpp
     }
 }
 

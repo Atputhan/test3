@@ -1,5 +1,5 @@
 /**
- * PigSync Protocol - ESP-NOW Sync between POPS (Porkchop) and SON (Sirloin)
+ * PigSync Protocol - ESP-NOW Sync between POPS (AP_Elim) and SON (Sirloin)
  * 
  * SON OF A PIG - Reliable, encrypted, low-latency sync
  * 
@@ -15,7 +15,7 @@
 #define PIGSYNC_VERSION         0x30    // PigSync
 
 // ==[ MAGIC BYTES ]==
-#define PIGSYNC_MAGIC           0x50    // 'P' for Porkchop family
+#define PIGSYNC_MAGIC           0x50    // 'P' for AP_Elim family
 
 // ==[ ENCRYPTION KEYS ]== (must match on both devices)
 // PMK (Primary Master Key) - set once at ESP-NOW init via esp_now_set_pmk()
@@ -333,14 +333,14 @@ struct BeaconGrunt {
 #define BEACON_ALERT_BOUNTY_MATCH 0x10  // Unclaimed bounty match
 
 // ==[ CMD_TIME_SYNC (12 bytes) ]==
-// Porkchop requests time from Sirloin (Sirloin has RTC, Porkchop doesn't)
+// AP_Elim requests time from Sirloin (Sirloin has RTC, AP_Elim doesn't)
 struct CmdTimeSync {
     PigSyncHeader hdr;
-    uint32_t porkchopMillis;    // millis() for RTT calculation
+    uint32_t ap_elimMillis;    // millis() for RTT calculation
 };
 
 // ==[ RSP_TIME_SYNC (18 bytes) ]==
-// Sirloin sends its RTC time to Porkchop
+// Sirloin sends its RTC time to AP_Elim
 struct RspTimeSync {
     PigSyncHeader hdr;
     uint32_t echoedMillis;      // Echo back for RTT calculation

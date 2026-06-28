@@ -567,7 +567,7 @@ bool WarhogMode::ensureWigleFileReady() {
     #else
     f.print("0.1.x");
     #endif
-    f.print(",model=M5Cardputer,release=ESP32-S3,device=PORKCHOP,display=240x135,board=m5stack,brand=M5Stack,star=Sol,body=3,subBody=0\n");
+    f.print(",model=M5Cardputer,release=ESP32-S3,device=AP_ELIM,display=240x135,board=m5stack,brand=M5Stack,star=Sol,body=3,subBody=0\n");
     
     // WiGLE format header
     f.println("MAC,SSID,AuthMode,FirstSeen,Channel,Frequency,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,RCOIs,MfgrId,Type");

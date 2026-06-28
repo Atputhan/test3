@@ -1,5 +1,5 @@
 /**
- * SFX - Non-blocking Sound Effects Implementation for Porkchop
+ * SFX - Non-blocking Sound Effects Implementation for AP_Elim
  *
  * ==[ CHEF'S AUDIO ENGINE ]== 
  * - Note sequences: {freq, duration, pause} steps

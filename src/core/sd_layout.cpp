@@ -7,8 +7,8 @@
 #include <string.h>
 
 namespace {
-static constexpr const char* kNewRoot = "/m5porkchop";
-static constexpr const char* kMarker = "/m5porkchop/meta/.migrated_v1";
+static constexpr const char* kNewRoot = "/m5ap_elim";
+static constexpr const char* kMarker = "/m5ap_elim/meta/.migrated_v1";
 
 static constexpr const char* kLegacyHandshakes = "/handshakes";
 static constexpr const char* kLegacyWardriving = "/wardriving";
@@ -17,21 +17,21 @@ static constexpr const char* kLegacyLogs = "/logs";
 static constexpr const char* kLegacyCrash = "/crash";
 static constexpr const char* kLegacyScreenshots = "/screenshots";
 
-static constexpr const char* kNewHandshakes = "/m5porkchop/handshakes";
-static constexpr const char* kNewWardriving = "/m5porkchop/wardriving";
-static constexpr const char* kNewModels = "/m5porkchop/models";
-static constexpr const char* kNewLogs = "/m5porkchop/logs";
-static constexpr const char* kNewCrash = "/m5porkchop/crash";
-static constexpr const char* kNewScreenshots = "/m5porkchop/screenshots";
-static constexpr const char* kNewDiagnostics = "/m5porkchop/diagnostics";
-static constexpr const char* kNewWpaSec = "/m5porkchop/wpa-sec";
-static constexpr const char* kNewWigle = "/m5porkchop/wigle";
-static constexpr const char* kNewXp = "/m5porkchop/xp";
-static constexpr const char* kNewMisc = "/m5porkchop/misc";
-static constexpr const char* kNewConfig = "/m5porkchop/config";
-static constexpr const char* kNewMeta = "/m5porkchop/meta";
+static constexpr const char* kNewHandshakes = "/m5ap_elim/handshakes";
+static constexpr const char* kNewWardriving = "/m5ap_elim/wardriving";
+static constexpr const char* kNewModels = "/m5ap_elim/models";
+static constexpr const char* kNewLogs = "/m5ap_elim/logs";
+static constexpr const char* kNewCrash = "/m5ap_elim/crash";
+static constexpr const char* kNewScreenshots = "/m5ap_elim/screenshots";
+static constexpr const char* kNewDiagnostics = "/m5ap_elim/diagnostics";
+static constexpr const char* kNewWpaSec = "/m5ap_elim/wpa-sec";
+static constexpr const char* kNewWigle = "/m5ap_elim/wigle";
+static constexpr const char* kNewXp = "/m5ap_elim/xp";
+static constexpr const char* kNewMisc = "/m5ap_elim/misc";
+static constexpr const char* kNewConfig = "/m5ap_elim/config";
+static constexpr const char* kNewMeta = "/m5ap_elim/meta";
 
-static constexpr const char* kLegacyConfig = "/porkchop.conf";
+static constexpr const char* kLegacyConfig = "/ap_elim.conf";
 static constexpr const char* kLegacyPersonality = "/personality.json";
 static constexpr const char* kLegacyWpasecResults = "/wpasec_results.txt";
 static constexpr const char* kLegacyWpasecUploaded = "/wpasec_uploaded.txt";
@@ -46,24 +46,24 @@ static constexpr const char* kLegacyHeapLog = "/heap_log.txt";
 static constexpr const char* kLegacyHeapWatermarks = "/heap_wm.bin";
 static constexpr const char* kLegacyWpasecKey = "/wpasec_key.txt";
 static constexpr const char* kLegacyWigleKey = "/wigle_key.txt";
-static constexpr const char* kLegacyConfigBin = "/porkchop.dat";
+static constexpr const char* kLegacyConfigBin = "/ap_elim.dat";
 
-static constexpr const char* kNewConfigPath = "/m5porkchop/config/porkchop.conf";
-static constexpr const char* kNewPersonalityPath = "/m5porkchop/config/personality.json";
-static constexpr const char* kNewWpasecResults = "/m5porkchop/wpa-sec/wpasec_results.txt";
-static constexpr const char* kNewWpasecUploaded = "/m5porkchop/wpa-sec/wpasec_uploaded.txt";
-static constexpr const char* kNewWpasecSent = "/m5porkchop/wpa-sec/wpasec_sent.txt";
-static constexpr const char* kNewWigleUploaded = "/m5porkchop/wigle/wigle_uploaded.txt";
-static constexpr const char* kNewWigleStats = "/m5porkchop/wigle/wigle_stats.json";
-static constexpr const char* kNewXpBackup = "/m5porkchop/xp/xp_backup.bin";
-static constexpr const char* kNewXpAwardedWpa = "/m5porkchop/xp/xp_awarded_wpa.txt";
-static constexpr const char* kNewXpAwardedWigle = "/m5porkchop/xp/xp_awarded_wigle.txt";
-static constexpr const char* kNewBoarBros = "/m5porkchop/misc/boar_bros.txt";
-static constexpr const char* kNewHeapLog = "/m5porkchop/diagnostics/heap_log.txt";
-static constexpr const char* kNewHeapWatermarks = "/m5porkchop/diagnostics/heap_wm.bin";
-static constexpr const char* kNewWpasecKey = "/m5porkchop/wpa-sec/wpasec_key.txt";
-static constexpr const char* kNewWigleKey = "/m5porkchop/wigle/wigle_key.txt";
-static constexpr const char* kNewConfigBin = "/m5porkchop/config/porkchop.dat";
+static constexpr const char* kNewConfigPath = "/m5ap_elim/config/ap_elim.conf";
+static constexpr const char* kNewPersonalityPath = "/m5ap_elim/config/personality.json";
+static constexpr const char* kNewWpasecResults = "/m5ap_elim/wpa-sec/wpasec_results.txt";
+static constexpr const char* kNewWpasecUploaded = "/m5ap_elim/wpa-sec/wpasec_uploaded.txt";
+static constexpr const char* kNewWpasecSent = "/m5ap_elim/wpa-sec/wpasec_sent.txt";
+static constexpr const char* kNewWigleUploaded = "/m5ap_elim/wigle/wigle_uploaded.txt";
+static constexpr const char* kNewWigleStats = "/m5ap_elim/wigle/wigle_stats.json";
+static constexpr const char* kNewXpBackup = "/m5ap_elim/xp/xp_backup.bin";
+static constexpr const char* kNewXpAwardedWpa = "/m5ap_elim/xp/xp_awarded_wpa.txt";
+static constexpr const char* kNewXpAwardedWigle = "/m5ap_elim/xp/xp_awarded_wigle.txt";
+static constexpr const char* kNewBoarBros = "/m5ap_elim/misc/boar_bros.txt";
+static constexpr const char* kNewHeapLog = "/m5ap_elim/diagnostics/heap_log.txt";
+static constexpr const char* kNewHeapWatermarks = "/m5ap_elim/diagnostics/heap_wm.bin";
+static constexpr const char* kNewWpasecKey = "/m5ap_elim/wpa-sec/wpasec_key.txt";
+static constexpr const char* kNewWigleKey = "/m5ap_elim/wigle/wigle_key.txt";
+static constexpr const char* kNewConfigBin = "/m5ap_elim/config/ap_elim.dat";
 
 // Use mutex to protect shared state
 static portMUX_TYPE layoutMutex = portMUX_INITIALIZER_UNLOCKED;
@@ -551,11 +551,11 @@ bool migrateIfNeeded() {
     }
 
     if (SD.exists(kNewRoot) && !isDirEmpty(kNewRoot)) {
-        // /m5porkchop exists with data but no marker. Most likely a previous
+        // /m5ap_elim exists with data but no marker. Most likely a previous
         // migration completed but the marker file was lost/corrupted.
         // Check for config dir as evidence of completed migration.
         if (SD.exists(kNewConfig)) {
-            Serial.println("[MIGRATE] /m5porkchop/config exists without marker; re-creating marker");
+            Serial.println("[MIGRATE] /m5ap_elim/config exists without marker; re-creating marker");
             ensureDir(kNewMeta);
             File marker = SD.open(kMarker, FILE_WRITE);
             if (marker) {
@@ -565,7 +565,7 @@ bool migrateIfNeeded() {
             setUseNewLayout(true);
             return true;
         }
-        Serial.println("[MIGRATE] /m5porkchop exists without marker or config; skipping migration");
+        Serial.println("[MIGRATE] /m5ap_elim exists without marker or config; skipping migration");
         setUseNewLayout(false);
         return false;
     }
@@ -664,13 +664,13 @@ bool migrateIfNeeded() {
     struct tm* t = localtime(&now);
     if (t && t->tm_year >= 120) {
         char buf[64];
-        snprintf(buf, sizeof(buf), "/backup/porkchop_%04d%02d%02d_%02d%02d%02d",
+        snprintf(buf, sizeof(buf), "/backup/ap_elim_%04d%02d%02d_%02d%02d%02d",
                  t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                  t->tm_hour, t->tm_min, t->tm_sec);
         backupDir = buf;
     } else {
         char buf[64];
-        snprintf(buf, sizeof(buf), "/backup/porkchop_boot_%lu", (unsigned long)millis());
+        snprintf(buf, sizeof(buf), "/backup/ap_elim_boot_%lu", (unsigned long)millis());
         backupDir = buf;
     }
 

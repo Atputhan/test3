@@ -45,12 +45,12 @@ void SDLog::ensureLogFile() {
     }
 
     // Use fixed filename - easier to find and read
-    snprintf(currentLogFile, sizeof(currentLogFile), "%s/porkchop.log", logsDir);
+    snprintf(currentLogFile, sizeof(currentLogFile), "%s/ap_elim.log", logsDir);
 
     // Create file with header
     File f = SD.open(currentLogFile, FILE_WRITE);
     if (f) {
-        f.println("=== PORKCHOP LOG ===");
+        f.println("=== AP_ELIM LOG ===");
         f.printf("Started at millis: %lu\n", millis());
         f.println("====================");
         f.close();

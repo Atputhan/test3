@@ -309,7 +309,7 @@ bool WiGLE::uploadSingleFile(const char* csvPath) {
     
     // Build multipart boundary
     char boundary[48];
-    snprintf(boundary, sizeof(boundary), "----PorkchopWiGLE%08lX", millis());
+    snprintf(boundary, sizeof(boundary), "----AP_ElimWiGLE%08lX", millis());
     
     // FIX: Use stack buffers for multipart body to avoid String concatenation fragmentation
     // bodyStart: "--boundary\r\nContent-Disposition: ...; filename="name"\r\nContent-Type: text/csv\r\n\r\n"

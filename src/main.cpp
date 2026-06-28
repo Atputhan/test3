@@ -1,4 +1,4 @@
-// m5porkchop
+// m5ap_elim
 // Main entry point
 // by 0ct0
 
@@ -8,7 +8,7 @@
 #include <WiFi.h>              // <-- PATCH: init WiFi early (before heap fragmentation)
 #include <esp_heap_caps.h>     // For heap conditioning
 #include <string.h>            // For memset
-#include "core/porkchop.h"
+#include "core/ap_elim.h"
 #include "core/config.h"
 #include "core/xp.h"
 #include "core/sdlog.h"
@@ -22,9 +22,14 @@
 #include "piglet/mood.h"
 #include "modes/oink.h"
 #include "modes/warhog.h"
+#include "core/threat.h"
+#include "holmes/detective.h"
+#include "modes/threatscan.h"
+#include "modes/audioplayer.h"
+#include "modes/warhog.h"
 #include "audio/sfx.h"
 
-Porkchop porkchop;
+AP_Elim ap_elim;
 
 // --- PATCH: Pre-init WiFi driver early to avoid later esp_wifi_init() failures
 // Some reconnect flows (and some Arduino/M5 stacks) end up deinit/reinit WiFi later.
@@ -89,7 +94,7 @@ static void setupHeapLayout() {
 void setup() {
     Serial.begin(115200);
     delay(100);
-    Serial.println("\n=== PORKCHOP STARTING ===");
+    Serial.println("\n=== AP_ELIM STARTING ===");
 
     // Deassert CapLoRa SX1262 CS BEFORE SD init. The SX1262 shares
     // MOSI(G14)/MISO(G39)/SCK(G40) with the SD card. If its CS floats low
@@ -130,7 +135,7 @@ void setup() {
     // Init audio early so boot sound plays
     SFX::init();
 
-    // Show boot splash (3 screens: OINK OINK, MY NAME IS, PORKCHOP)
+    // Show boot splash (3 screens: OINK OINK, MY NAME IS, AP_ELIM)
     Display::showBootSplash();
 
     // Apply saved brightness
@@ -139,6 +144,10 @@ void setup() {
     // Initialize piglet personality
     Avatar::init();
     Mood::init();
+    ThreatDB::init();
+    Detective::init();
+    ThreatScanMode::init();
+    AudioPlayerMode::init();
 
     // Initialize GPS (if enabled)
     if (Config::gps().enabled) {
@@ -167,9 +176,9 @@ void setup() {
     // Initialize modes
     OinkMode::init();
     WarhogMode::init();
-    porkchop.init();
+    ap_elim.init();
 
-    Serial.println("=== PORKCHOP READY ===");
+    Serial.println("=== AP_ELIM READY ===");
     Serial.printf("Piglet: %s\n", Config::personality().name);
     
     // #region agent log
@@ -251,7 +260,7 @@ void loop() {
     Mood::update();
 
     // Update main controller (handles modes, input, state)
-    porkchop.update();
+    ap_elim.update();
 
     // Update display
     Display::update();

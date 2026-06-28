@@ -9,8 +9,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/portmacro.h>
 
-// porkchop global instance lives in main.cpp
-extern Porkchop porkchop;
+// ap_elim global instance lives in main.cpp
+extern AP_Elim ap_elim;
 
 // static member initialization
 ActiveChallenge Challenges::challenges[3] = {};
@@ -69,12 +69,12 @@ static const uint8_t POOL_SIZE = sizeof(CHALLENGE_POOL) / sizeof(CHALLENGE_POOL[
 // ============================================================
 
 bool Challenges::isPigAwake() {
-    PorkchopMode mode = porkchop.getMode();
-    return mode == PorkchopMode::OINK_MODE ||
-           mode == PorkchopMode::DNH_MODE ||
-           mode == PorkchopMode::WARHOG_MODE ||
-           mode == PorkchopMode::PIGGYBLUES_MODE ||
-           mode == PorkchopMode::SPECTRUM_MODE;
+    AP_ElimMode mode = ap_elim.getMode();
+    return mode == AP_ElimMode::OINK_MODE ||
+           mode == AP_ElimMode::DNH_MODE ||
+           mode == AP_ElimMode::WARHOG_MODE ||
+           mode == AP_ElimMode::PIGGYBLUES_MODE ||
+           mode == AP_ElimMode::SPECTRUM_MODE;
 }
 
 // ============================================================

@@ -6,7 +6,7 @@
 #include <FS.h>
 #include <SPI.h>
 
-#define CONFIG_FILE "/porkchop.conf"
+#define CONFIG_FILE "/ap_elim.conf"
 #define PERSONALITY_FILE "/personality.json"
 
 // GPS module source selection
@@ -74,7 +74,7 @@ static constexpr uint8_t BOOT_MODE_COUNT = 4;
 struct MLConfig {
     bool enabled = true;
     MLCollectionMode collectionMode = MLCollectionMode::ENHANCED;  // Data collection mode
-    char modelPath[64] = "/m5porkchop/models/porkchop_model.bin";
+    char modelPath[64] = "/m5ap_elim/models/ap_elim_model.bin";
     float confidenceThreshold = 0.7f;
     float rogueApThreshold = 0.8f;
     float vulnScorerThreshold = 0.6f;
@@ -111,7 +111,7 @@ struct BLEConfig {
 
 // Personality
 struct PersonalityConfig {
-    char name[32] = "Porkchop";
+    char name[32] = "AP_Elim";
     char callsign[16] = "";             // User handle (unlocked at L10)
     int mood = 50;                      // -100 to 100
     uint32_t experience = 0;
@@ -135,8 +135,8 @@ public:
     static bool loadPersonality();
     static bool isSDAvailable();
     static bool reinitSD();  // Try to (re)initialize SD card at runtime
-    static bool loadWpaSecKeyFromFile();  // Load key from /m5porkchop/wpa-sec/wpasec_key.txt (legacy /wpasec_key.txt)
-    static bool loadWigleKeyFromFile();   // Load keys from /m5porkchop/wigle/wigle_key.txt (legacy /wigle_key.txt)
+    static bool loadWpaSecKeyFromFile();  // Load key from /m5ap_elim/wpa-sec/wpasec_key.txt (legacy /wpasec_key.txt)
+    static bool loadWigleKeyFromFile();   // Load keys from /m5ap_elim/wigle/wigle_key.txt (legacy /wigle_key.txt)
     static void prepareSDBus();           // Prepare SPI bus for raw SD access
     static void prepareCapLoraGpio();     // Quiesce SX1262 and clear G13 IOMUX before GPS UART
     static SPIClass& sdSpi();             // Access SD SPI bus
@@ -169,5 +169,5 @@ private:
     static void savePersonalityToSPIFFS();
     static bool loadFrom(fs::FS& fs, const char* path);   // JSON migration only
     static bool applyJson(const JsonDocument& doc);        // JSON migration only
-    static bool importCredsFromJsonConf();                 // Merge creds from porkchop.conf if present
+    static bool importCredsFromJsonConf();                 // Merge creds from ap_elim.conf if present
 };
