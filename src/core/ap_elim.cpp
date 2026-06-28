@@ -266,7 +266,7 @@ void AP_Elim::init() {
             "HEALTH BAR IS HEAP HEALTH.\n"
             "LARGEST CONTIG DRIVES TLS.\n"
             "FRAGMENTATION YOINKS IT.\n"
-            "BREW FIXES. JAH BLESS DI RF.",
+            "BREW FIXES. AP_ELIM READY.",
             5000
         );
     }

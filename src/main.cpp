@@ -135,7 +135,7 @@ void setup() {
     // Init audio early so boot sound plays
     SFX::init();
 
-    // Show boot splash (3 screens: OINK OINK, MY NAME IS, AP_ELIM)
+    // Show boot splash (3 screens: AP_ELIM, MY NAME IS, AP_ELIM)
     Display::showBootSplash();
 
     // Apply saved brightness

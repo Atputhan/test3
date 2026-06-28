@@ -207,6 +207,31 @@ static const Note SND_SIREN[] = {
     {0, 0, 0}
 };
 
+// CHURCHILL DOWNS: Chiptune boot melody (C# Minor, ~88 BPM)
+// Approximates the vocal sample hook from Jack Harlow ft. Drake
+static const Note SND_CHURCHILL[] = {
+    // Bar 1 — main hook phrase
+    {277, 280, 20},  // C#4
+    {330, 280, 20},  // E4
+    {370, 280, 20},  // F#4
+    {415, 560, 40},  // G#4 — held
+    {330, 280, 20},  // E4
+    {277, 560, 60},  // C#4 — held
+    
+    // Bar 2 — variation
+    {277, 200, 15},  // C#4
+    {330, 200, 15},  // E4
+    {370, 200, 15},  // F#4
+    {415, 200, 15},  // G#4
+    {494, 400, 30},  // B4 — peak note
+    {415, 280, 20},  // G#4
+    {330, 280, 20},  // E4
+    {277, 600, 0},   // C#4 — final, held
+    
+    // End marker
+    {0, 0, 0}
+};
+
 // ==[ SPECTRUM MODE SOUNDS ]==
 
 // SIGNAL_LOST: "Gone" - sad descending
@@ -420,6 +445,9 @@ bool update() {
                 break;
             case BOOT:
                 startSequence(SND_BOOT);
+                break;
+            case CHURCHILL:
+                startSequence(SND_CHURCHILL);
                 break;
             case PIGSYNC_BOOT:
                 startSequence(SND_PIGSYNC_BOOT);

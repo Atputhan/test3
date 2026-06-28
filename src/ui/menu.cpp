@@ -150,63 +150,63 @@ static const char* const H_CHARGING[] = {
 
 // Root menu items
 const RootItem Menu::ROOT_ITEMS[] = {
-    {"/>",  "ATTACK",  H_ATTACK,  (uint8_t)(sizeof(H_ATTACK)/sizeof(H_ATTACK[0])),  RootType::GROUP,  {.groupId = GroupId::ATTACK}},
-    {"o~",  "RECON",   H_RECON,   (uint8_t)(sizeof(H_RECON)/sizeof(H_RECON[0])),    RootType::GROUP,  {.groupId = GroupId::RECON}},
-    {"[$",  "LOOT",    H_LOOT,    (uint8_t)(sizeof(H_LOOT)/sizeof(H_LOOT[0])),      RootType::GROUP,  {.groupId = GroupId::LOOT}},
-    {"^#",  "RANK",    H_RANK,    (uint8_t)(sizeof(H_RANK)/sizeof(H_RANK[0])),      RootType::GROUP,  {.groupId = GroupId::RANK}},
-    {"))",  "COMMS",   H_COMMS,   (uint8_t)(sizeof(H_COMMS)/sizeof(H_COMMS[0])),    RootType::GROUP,  {.groupId = GroupId::COMMS}},
-    {"::",  "SYSTEM",  H_SYSTEM,  (uint8_t)(sizeof(H_SYSTEM)/sizeof(H_SYSTEM[0])),  RootType::GROUP,  {.groupId = GroupId::SYSTEM}}
+    {"/>",  "ENERGY",  H_ATTACK,  (uint8_t)(sizeof(H_ATTACK)/sizeof(H_ATTACK[0])),  RootType::GROUP,  {.groupId = GroupId::ATTACK}},
+    {"o~",  "VIEWS",   H_RECON,   (uint8_t)(sizeof(H_RECON)/sizeof(H_RECON[0])),    RootType::GROUP,  {.groupId = GroupId::RECON}},
+    {"[$",  "HEADLINES",    H_LOOT,    (uint8_t)(sizeof(H_LOOT)/sizeof(H_LOOT[0])),      RootType::GROUP,  {.groupId = GroupId::LOOT}},
+    {"^#",  "LEGEND",    H_RANK,    (uint8_t)(sizeof(H_RANK)/sizeof(H_RANK[0])),      RootType::GROUP,  {.groupId = GroupId::RANK}},
+    {"))",  "CONNECT",   H_COMMS,   (uint8_t)(sizeof(H_COMMS)/sizeof(H_COMMS[0])),    RootType::GROUP,  {.groupId = GroupId::COMMS}},
+    {"::",  "GODSPLAN",  H_SYSTEM,  (uint8_t)(sizeof(H_SYSTEM)/sizeof(H_SYSTEM[0])),  RootType::GROUP,  {.groupId = GroupId::SYSTEM}}
 };
 const uint8_t Menu::ROOT_COUNT = sizeof(ROOT_ITEMS) / sizeof(ROOT_ITEMS[0]);
 
 // Group: ATTACK - offensive TX operations
 const MenuItem Menu::GROUP_ATTACK[] = {
-    {"/>", "OINKS",  1,  H_OINK,   (uint8_t)(sizeof(H_OINK)/sizeof(H_OINK[0]))},
-    {"!!", "BLUES", 8,  H_BLUES,  (uint8_t)(sizeof(H_BLUES)/sizeof(H_BLUES[0]))}
+    {"/>", "NONSTOP",  1,  H_OINK,   (uint8_t)(sizeof(H_OINK)/sizeof(H_OINK[0]))},
+    {"!!", "CERT LVR", 8,  H_BLUES,  (uint8_t)(sizeof(H_BLUES)/sizeof(H_BLUES[0]))}
 };
 const uint8_t Menu::GROUP_ATTACK_SIZE = sizeof(GROUP_ATTACK) / sizeof(GROUP_ATTACK[0]);
 
 // Group: RECON - passive RX intelligence
 const MenuItem Menu::GROUP_RECON[] = {
-    {"o~", "DNOHAM",  14, H_DNOHAM, (uint8_t)(sizeof(H_DNOHAM)/sizeof(H_DNOHAM[0]))},
-    {"<>", "WARHOG",  2,  H_WARHOG, (uint8_t)(sizeof(H_WARHOG)/sizeof(H_WARHOG[0]))},
-    {"~~", "SPCTRM", 10,  H_SPCTRM, (uint8_t)(sizeof(H_SPCTRM)/sizeof(H_SPCTRM[0]))}
+    {"o~", "HUSH",  14, H_DNOHAM, (uint8_t)(sizeof(H_DNOHAM)/sizeof(H_DNOHAM[0]))},
+    {"<>", "6GOD",  2,  H_WARHOG, (uint8_t)(sizeof(H_WARHOG)/sizeof(H_WARHOG[0]))},
+    {"~~", "SCORPION", 10,  H_SPCTRM, (uint8_t)(sizeof(H_SPCTRM)/sizeof(H_SPCTRM[0]))}
 };
 const uint8_t Menu::GROUP_RECON_SIZE = sizeof(GROUP_RECON) / sizeof(GROUP_RECON[0]);
 
 // Group: LOOT - captured data and targets
 const MenuItem Menu::GROUP_LOOT[] = {
-    {"C#", "HASHES",  4,  H_HASHES, (uint8_t)(sizeof(H_HASHES)/sizeof(H_HASHES[0]))},
+    {"C#", "CAPTURE",  4,  H_HASHES, (uint8_t)(sizeof(H_HASHES)/sizeof(H_HASHES[0]))},
     {"~>", "TRACKS",  13, H_TRACKS, (uint8_t)(sizeof(H_TRACKS)/sizeof(H_TRACKS[0]))},
-    {"B$", "BOUNTY",  17, H_BOUNTY, (uint8_t)(sizeof(H_BOUNTY)/sizeof(H_BOUNTY[0]))}
+    {"B$", "TROPHIES",  17, H_BOUNTY, (uint8_t)(sizeof(H_BOUNTY)/sizeof(H_BOUNTY[0]))}
 };
 const uint8_t Menu::GROUP_LOOT_SIZE = sizeof(GROUP_LOOT) / sizeof(GROUP_LOOT[0]);
 
 // Group: COMMS - external communication
 const MenuItem Menu::GROUP_COMMS[] = {
-    {"@)", "PIGSYNC",    16, H_SYNC,    (uint8_t)(sizeof(H_SYNC)/sizeof(H_SYNC[0]))},
-    {"))", "BACONTX", 18, H_BACONTX, (uint8_t)(sizeof(H_BACONTX)/sizeof(H_BACONTX[0]))},
-    {"FX", "TRANSFR",    3,  H_XFIL,    (uint8_t)(sizeof(H_XFIL)/sizeof(H_XFIL[0]))}
+    {"@)", "SYNC",    16, H_SYNC,    (uint8_t)(sizeof(H_SYNC)/sizeof(H_SYNC[0]))},
+    {"))", "FLOOD", 18, H_BACONTX, (uint8_t)(sizeof(H_BACONTX)/sizeof(H_BACONTX[0]))},
+    {"FX", "UPSEND",    3,  H_XFIL,    (uint8_t)(sizeof(H_XFIL)/sizeof(H_XFIL[0]))}
 };
 const uint8_t Menu::GROUP_COMMS_SIZE = sizeof(GROUP_COMMS) / sizeof(GROUP_COMMS[0]);
 
 // Group: RANK - progression and street cred
 const MenuItem Menu::GROUP_RANK[] = {
-    {"^#", "FLEXES",    11, H_FLEX,   (uint8_t)(sizeof(H_FLEX)/sizeof(H_FLEX[0]))},
-    {"*#", "BADGES",   9, H_BADGES, (uint8_t)(sizeof(H_BADGES)/sizeof(H_BADGES[0]))},
-    {"?*", "UNLOCK",  15, H_SNOUTS, (uint8_t)(sizeof(H_SNOUTS)/sizeof(H_SNOUTS[0]))}
+    {"^#", "FLEX",    11, H_FLEX,   (uint8_t)(sizeof(H_FLEX)/sizeof(H_FLEX[0]))},
+    {"*#", "BADDEST",   9, H_BADGES, (uint8_t)(sizeof(H_BADGES)/sizeof(H_BADGES[0]))},
+    {"?*", "CHESTS",  15, H_SNOUTS, (uint8_t)(sizeof(H_SNOUTS)/sizeof(H_SNOUTS[0]))}
 };
 const uint8_t Menu::GROUP_RANK_SIZE = sizeof(GROUP_RANK) / sizeof(GROUP_RANK[0]);
 
 // Group: SYSTEM - utilities and config
 const MenuItem Menu::GROUP_SYSTEM[] = {
-    {"==", "SETTINGS",   5,  H_SETTINGS, (uint8_t)(sizeof(H_SETTINGS)/sizeof(H_SETTINGS[0]))},
-    {"[]", "BOARBROS",  12, H_BRBRS,    (uint8_t)(sizeof(H_BRBRS)/sizeof(H_BRBRS[0]))},
-    {"!!", "COREDUMP",  7,  H_CRASHES,  (uint8_t)(sizeof(H_CRASHES)/sizeof(H_CRASHES[0]))},
-    {"::", "DIAGDATA",   19, H_DIAG,     (uint8_t)(sizeof(H_DIAG)/sizeof(H_DIAG[0]))},
-    {"SD", "FORMATSD",  20, H_SDFMT,    (uint8_t)(sizeof(H_SDFMT)/sizeof(H_SDFMT[0]))},
-    {"~~", "CHARGING",  21, H_CHARGING, (uint8_t)(sizeof(H_CHARGING)/sizeof(H_CHARGING[0]))},
-    {":?", "ABOUTPIG",   6,  H_ABOUT,    (uint8_t)(sizeof(H_ABOUT)/sizeof(H_ABOUT[0]))}
+    {"==", "CONTROL",   5,  H_SETTINGS, (uint8_t)(sizeof(H_SETTINGS)/sizeof(H_SETTINGS[0]))},
+    {"[]", "EXCLUDED",  12, H_BRBRS,    (uint8_t)(sizeof(H_BRBRS)/sizeof(H_BRBRS[0]))},
+    {"!!", "CRASH",  7,  H_CRASHES,  (uint8_t)(sizeof(H_CRASHES)/sizeof(H_CRASHES[0]))},
+    {"::", "STATUS",   19, H_DIAG,     (uint8_t)(sizeof(H_DIAG)/sizeof(H_DIAG[0]))},
+    {"SD", "WIPE",  20, H_SDFMT,    (uint8_t)(sizeof(H_SDFMT)/sizeof(H_SDFMT[0]))},
+    {"~~", "JUICE",  21, H_CHARGING, (uint8_t)(sizeof(H_CHARGING)/sizeof(H_CHARGING[0]))},
+    {":?", "6PM TOR",   6,  H_ABOUT,    (uint8_t)(sizeof(H_ABOUT)/sizeof(H_ABOUT[0]))}
 };
 const uint8_t Menu::GROUP_SYSTEM_SIZE = sizeof(GROUP_SYSTEM) / sizeof(GROUP_SYSTEM[0]);
 
@@ -265,12 +265,12 @@ uint8_t Menu::getGroupSize(GroupId group) {
 
 const char* Menu::getGroupName(GroupId group) {
     switch (group) {
-        case GroupId::ATTACK:  return "ATTACK";
-        case GroupId::RECON:   return "RECON";
-        case GroupId::LOOT:    return "LOOT";
-        case GroupId::COMMS:   return "COMMS";
-        case GroupId::RANK:    return "RANK";
-        case GroupId::SYSTEM:  return "SYSTEM";
+        case GroupId::ATTACK:  return "ENERGY";
+        case GroupId::RECON:   return "VIEWS";
+        case GroupId::LOOT:    return "HEADLINES";
+        case GroupId::COMMS:   return "CONNECT";
+        case GroupId::RANK:    return "LEGEND";
+        case GroupId::SYSTEM:  return "GODSPLAN";
         default: return "";
     }
 }

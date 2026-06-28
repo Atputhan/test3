@@ -48,6 +48,7 @@ enum Event {
     MENU_CLICK,         // menu navigation click
     TERMINAL_TICK,      // short terminal tick (boot variation)
     BOOT,               // device boot sequence
+    CHURCHILL,          // Churchill Downs chiptune boot melody
     PIGSYNC_BOOT,       // extended boot sequence for PIGSYNC
     
     // === SPECIAL ===

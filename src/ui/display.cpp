@@ -905,7 +905,7 @@ void Display::drawBottomBar() {
         statsBuf[sizeof(statsBuf) - 1] = '\0';
         statsStr = statsBuf;
     } else if (mode == AP_ElimMode::PIGGYBLUES_MODE) {
-        // PIGGYBLUES: TX:total A:apple G:android S:samsung W:windows
+        // BLUETOOTH ATTACK: TX:total A:apple G:android S:samsung W:windows
         uint32_t total = PiggyBluesMode::getTotalPackets();
         uint32_t apple = PiggyBluesMode::getAppleCount();
         uint32_t android = PiggyBluesMode::getAndroidCount();
@@ -1243,11 +1243,16 @@ void Display::showBootSplash() {
     M5.Display.setTextSize(1);
     M5.Display.setTextColor(TFT_DARKGREY);
     M5.Display.drawString("gh0$t was here", DISPLAY_W / 2, DISPLAY_H / 2 + 45);
+    // OVO owl
+    M5.Display.setTextSize(1);
+    M5.Display.setTextColor(TFT_PURPLE);
+    M5.Display.drawString("  .___.", DISPLAY_W / 2 - 14, DISPLAY_H / 2 + 55);
+    M5.Display.drawString(" (o o )", DISPLAY_W / 2 - 14, DISPLAY_H / 2 + 65);
+    M5.Display.drawString(" ( V )", DISPLAY_W / 2 - 14, DISPLAY_H / 2 + 75);
+    M5.Display.drawString("  ' ' ", DISPLAY_W / 2 - 14, DISPLAY_H / 2 + 85);
     
-    SFX::play(SFX::BOOT);
+    SFX::play(SFX::CHURCHILL);
     bootSplashDelay(1000);
-    
-    // Screen 2: gh0$t WAS HERE — creator credit
     M5.Display.fillScreen(0x0000);
     M5.Display.setTextColor(TFT_PURPLE);
     M5.Display.setTextSize(2);
