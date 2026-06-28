@@ -172,7 +172,7 @@ void cursed_pmkidMarqueeDraw(M5Canvas& canvas, int16_t y, uint16_t fg, uint16_t 
     int l = strlen(marqueeBuf);
     for (int i = 0; i < 21 && i < l; i++) disp[i] = marqueeBuf[(marqueeOffset+i)%l];
     disp[21] = 0;
-    canvas.setTextColor(TFT_GREEN_YELLOW, bg);
+    canvas.setTextColor(TFT_GREEN, bg);
     canvas.setTextSize(1);
     canvas.drawCentreString(disp, 120, y, 1);
 }
@@ -316,3 +316,4 @@ void cursed_update() {
     if (jumpscareActive) cursed_jumpscareUpdate();
     if (shutdownActive) cursed_shutdownUpdate();
 }
+

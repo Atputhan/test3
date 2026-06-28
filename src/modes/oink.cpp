@@ -159,8 +159,6 @@ static bool dequeuePendingPMKID(PendingPMKIDCreate& out) {
     return true;
 }
 
-
-
 // Static members
 bool OinkMode::running = false;
 bool OinkMode::scanning = false;
@@ -192,15 +190,11 @@ std::atomic<uint32_t> OinkMode::packetCount{0};
 uint8_t OinkMode::lastPMKID[16] = {0};
 char OinkMode::lastPMKIDSSID[33] = {0};
 bool OinkMode::hasLastPMKID = false;
-uint32_t OinkMode::deauthCount = 0;
 uint16_t OinkMode::filteredCount = 0;
 uint64_t OinkMode::filteredCache[64] = {0};
 uint8_t OinkMode::filteredCacheIndex = 0;
-    hasLastPMKID = false;
-    memset(lastPMKID, 0, 16);
-    lastPMKIDSSID[0] = 0;
+uint32_t OinkMode::deauthCount = 0;
 
-// Memory limits to prevent OOM
 const size_t MAX_NETWORKS = 200;       // Max tracked networks
 const size_t MAX_HANDSHAKES = 50;      // Max handshakes (each can be large)
 const size_t MAX_PMKIDS = 50;          // Max PMKIDs (smaller than handshakes)
@@ -386,7 +380,10 @@ void OinkMode::init() {
     hasLastPMKID = false;
     memset(lastPMKID, 0, 16);
     lastPMKIDSSID[0] = 0;
-    
+
+
+
+
     targetIndex = -1;
     memset(targetBssid, 0, 6);
     clearTargetClients();
@@ -1148,11 +1145,11 @@ void OinkMode::update() {
                     // Only send when no clients discovered - reduces noise pollution
                     if (clientCountLocal == 0) {
                         sendDeauthFrame(targetBssidLocal, broadcast, 7);
-                        sendDisassocFrame
-            cursed_ghostRecord(targetBssidLocal, targetSSIDLocal);(targetBssidLocal, broadcast, 8);  // Some devices respond to disassoc only
+                        cursed_ghostRecord(targetBssidLocal, targetSSIDLocal);
+                        sendDisassocFrame(targetBssidLocal, broadcast, 8);
                         deauthCount++;
                     }
-                    
+
                     lastDeauthTime = now;
                 }
                 
